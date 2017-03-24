@@ -17,11 +17,6 @@
    <description>ONDEX OVTK2</description>
 
 
-
-
-
-
-
    <build>
       <plugins>
          <plugin>
@@ -288,12 +283,14 @@
          <version>1.6.0</version>
       </dependency>
 
-      <!-- ONDEX deps -->      <dependency>
+      <!-- ONDEX deps -->
+      <dependency>
          <groupId>net.sourceforge.ondex</groupId>
          <artifactId>datadir</artifactId>
          <version>${project.version}</version>
          <type>zip</type>
          <classifier>data</classifier>
+         <scope>runtime</scope>
       </dependency>
 
       <dependency>

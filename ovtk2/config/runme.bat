@@ -1,6 +1,6 @@
 @echo off
 cd /d %~dp0
-set MEMORY=1200M
+set MEMORY=2G
 set DATA=data/
 set OVTK_DATA=config/
 echo Running OVTK with %MEMORY% and data dir %DATA% edit runme.bat to change this amount

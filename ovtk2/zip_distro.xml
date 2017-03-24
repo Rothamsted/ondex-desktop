@@ -11,7 +11,7 @@
 			<outputDirectory>${artifactId}/lib</outputDirectory>
 			<outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}${dashClassifier?}.${artifact.extension}</outputFileNameMapping>
 			<useTransitiveDependencies>true</useTransitiveDependencies>
-			<scope>runtime</scope>
+			<scope>compile</scope>
 			<excludes>
 				<exclude>*:zip</exclude>
 			</excludes>
