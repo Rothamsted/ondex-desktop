@@ -130,6 +130,8 @@
                <targetJdk>${java.version}</targetJdk>
             </configuration>
          </plugin>
+
+         <!-- TODO: review, doesn't work on Java 10 anymore          
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -147,7 +149,8 @@
 						http://ondex.rothamsted.ac.uk/ondex/modules/apidocs/
 					</additionalparam>
             </configuration>
-         </plugin>
+         </plugin -->
+         
          <!-- <producer> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-javadoc-producer</artifactId> 
 				<configuration> <doclet>org.umlgraph.doclet.UmlGraphDoc</doclet> <docletArtifact> 
 				<groupId>gr.spinellis</groupId> <artifactId>UmlGraph</artifactId> <version>5.0</version> 

@@ -49,6 +49,8 @@
                <targetJdk>1.6</targetJdk>
             </configuration>
          </plugin>
+         
+         <!-- TODO: review, doesn't work on Java 10 anymore          
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -64,7 +66,7 @@
 						-link http://ondex.rothamsted.ac.uk/ondex/ovtk2/apidocs/
                     </additionalparam>
             </configuration>
-         </plugin>
+         </plugin -->
       </plugins>
    </reporting>
 
