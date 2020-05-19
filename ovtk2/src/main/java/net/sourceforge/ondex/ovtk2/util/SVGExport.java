@@ -33,10 +33,10 @@ import org.apache.fop.render.ps.EPSTranscoder;
 import org.apache.fop.render.ps.PSTranscoder;
 import org.apache.fop.svg.PDFTranscoder;
 import org.apache.xmlgraphics.image.writer.internal.JPEGImageWriter;
+import org.jungrapht.visualization.VisualizationViewer;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Desktop;
@@ -63,7 +63,7 @@ public class SVGExport {
 		VisualizationViewer<ONDEXConcept, ONDEXRelation> vv = viewer.getVisualizationViewer();
 
 		// get size of area to paint
-		Rectangle rect = vv.getVisibleRect();
+		Rectangle rect = vv.getComponent().getVisibleRect();
 		svgGenerator.clip(rect);
 
 		// make rendering look nice
@@ -78,7 +78,7 @@ public class SVGExport {
 		vv.setDoubleBuffered(false);
 
 		// paint once on SVG
-		vv.paint(svgGenerator);
+		vv.getComponent().paint(svgGenerator);
 
 		FileOutputStream fos = null;
 		try {

@@ -20,7 +20,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.undo.StateEdit;
 
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import net.sourceforge.ondex.ONDEXPluginArguments;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ONDEXConcept;
@@ -41,6 +40,7 @@ import net.sourceforge.ondex.ovtk2.util.listmodel.ConceptListModel;
 import net.sourceforge.ondex.ovtk2.util.renderer.CustomCellRenderer;
 import net.sourceforge.ondex.tools.threading.monitoring.MonitoringToolKit;
 import net.sourceforge.ondex.tools.threading.monitoring.SimpleMonitor;
+import org.jungrapht.visualization.selection.SelectedState;
 
 /**
  * Filter to change the visibility according to shortest paths present in graph.
@@ -110,9 +110,9 @@ public class OnePairShortestPathFilter extends OVTK2Filter implements
 		list_stop = new JList(clm_stop);
 		list_stop.setCellRenderer(new CustomCellRenderer());
 
-		PickedState<ONDEXConcept> state = viewer.getVisualizationViewer()
-				.getPickedVertexState();
-		Set<ONDEXConcept> set = state.getPicked();
+		SelectedState<ONDEXConcept> state = viewer.getVisualizationViewer()
+				.getSelectedVertexState();
+		Set<ONDEXConcept> set = state.getSelected();
 
 		Iterator<ONDEXConcept> it = set.iterator();
 		while (it.hasNext()) {
@@ -357,8 +357,7 @@ public class OnePairShortestPathFilter extends OVTK2Filter implements
 							}
 
 							// propagate change to viewer
-							viewer.getVisualizationViewer().getModel()
-									.fireStateChanged();
+							viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 							edit.end();
 							viewer.getUndoManager().addEdit(edit);
 							desktop.getOVTK2Menu().updateUndoRedo(viewer);

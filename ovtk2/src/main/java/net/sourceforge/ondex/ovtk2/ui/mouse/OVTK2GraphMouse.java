@@ -1,6 +1,6 @@
 package net.sourceforge.ondex.ovtk2.ui.mouse;
 
-import edu.uci.ics.jung.visualization.control.ScalingControl;
+import org.jungrapht.visualization.control.ScalingControl;
 
 /**
  * Interface for mouse cross compatibility between desktop and applet.

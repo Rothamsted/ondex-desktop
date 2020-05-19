@@ -907,10 +907,12 @@ public class OVTK2Menu extends JMenuBar implements IFileHistory, OVTK2MenuBar {
 	 */
 	private void populateLayoutMenu(JMenu layout) throws MalformedURLException {
 
-		Set<String> exceptions = new HashSet<String>();
+		Set<String> exceptions = new HashSet<>();
 		exceptions.add("net.sourceforge.ondex.ovtk2.layout.ConceptClassCircleLayout");
 		exceptions.add("net.sourceforge.ondex.ovtk2.layout.StaticLayout");
 		exceptions.add("net.sourceforge.ondex.ovtk2.layout.GEMLayout");
+		exceptions.add("net.sourceforge.ondex.ovtk2.layout.AttributeKKLayout");
+
 
 		// make sure layout menu action is handled
 		LayoutMenuAction listener = new LayoutMenuAction();
@@ -918,7 +920,7 @@ public class OVTK2Menu extends JMenuBar implements IFileHistory, OVTK2MenuBar {
 		desktop.addInternalFrameListener(listener);
 
 		// add layouter from config.xml file
-		ArrayList<String> entries = new ArrayList<String>();
+		ArrayList<String> entries = new ArrayList<>();
 		Enumeration<?> enu = Config.config.propertyNames();
 		while (enu.hasMoreElements()) {
 			String name = (String) enu.nextElement();
@@ -933,7 +935,7 @@ public class OVTK2Menu extends JMenuBar implements IFileHistory, OVTK2MenuBar {
 		// order layouts by name
 		String[] ordered = entries.toArray(new String[entries.size()]);
 
-		HashMap<String, String> realNameToDisplayName = new HashMap<String, String>();
+		HashMap<String, String> realNameToDisplayName = new HashMap<>();
 		for (String name : ordered) {
 			String display = Config.language.getProperty("Name." + name);
 			realNameToDisplayName.put(name, display);

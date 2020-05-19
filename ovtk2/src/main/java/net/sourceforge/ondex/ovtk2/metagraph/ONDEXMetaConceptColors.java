@@ -4,15 +4,14 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.function.Function;
 
-import org.apache.commons.collections15.Transformer;
-
-import edu.uci.ics.jung.visualization.picking.PickedInfo;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
+import org.jungrapht.visualization.selection.SelectedState;
 
-public class ONDEXMetaConceptColors implements Transformer<ONDEXMetaConcept, Paint> {
+public class ONDEXMetaConceptColors implements Function<ONDEXMetaConcept, Paint> {
 
 	// ####FIELDS####
 
@@ -23,7 +22,7 @@ public class ONDEXMetaConceptColors implements Transformer<ONDEXMetaConcept, Pai
 	private ONDEXJUNGGraph graph = null;
 
 	// current PickedInfo
-	private PickedInfo<ONDEXMetaConcept> pi = null;
+	private SelectedState<ONDEXMetaConcept> pi = null;
 
 	// ####CONSTRUCTOR####
 
@@ -33,7 +32,7 @@ public class ONDEXMetaConceptColors implements Transformer<ONDEXMetaConcept, Pai
 	 * @param graph
 	 *            ONDEXJUNGGraph
 	 */
-	public ONDEXMetaConceptColors(ONDEXJUNGGraph graph, PickedInfo<ONDEXMetaConcept> pi) {
+	public ONDEXMetaConceptColors(ONDEXJUNGGraph graph, SelectedState<ONDEXMetaConcept> pi) {
 		if (pi == null)
 			throw new IllegalArgumentException("PickedInfo instance must be non-null");
 		this.pi = pi;
@@ -50,12 +49,13 @@ public class ONDEXMetaConceptColors implements Transformer<ONDEXMetaConcept, Pai
 	/**
 	 * Returns result of transformation.
 	 * 
-	 * @param edge
+	 * @param node
 	 *            ONDEXMetaRelation
 	 * @return Colour
 	 */
-	public Color transform(ONDEXMetaConcept node) {
-		if (pi.isPicked(node)) {
+	@Override
+	public Color apply(ONDEXMetaConcept node) {
+		if (pi.isSelected(node)) {
 			return Config.nodePickedColor;
 		} else {
 			updateColor(node);
@@ -77,7 +77,7 @@ public class ONDEXMetaConceptColors implements Transformer<ONDEXMetaConcept, Pai
 	/**
 	 * Update the colour of a given edge.
 	 * 
-	 * @param edge
+	 * @param node
 	 *            ONDEXMetaRelation
 	 */
 	public void updateColor(ONDEXMetaConcept node) {
@@ -88,9 +88,9 @@ public class ONDEXMetaConceptColors implements Transformer<ONDEXMetaConcept, Pai
 	/**
 	 * Update the colour of a given edge with a given colour.
 	 * 
-	 * @param edge
+	 * @param node
 	 *            ONDEXMetaRelation
-	 * @param color
+	 * @param c
 	 *            Colour
 	 */
 	public void updateColor(ONDEXMetaConcept node, Color c) {

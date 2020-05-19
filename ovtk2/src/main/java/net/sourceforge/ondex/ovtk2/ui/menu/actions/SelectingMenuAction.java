@@ -3,7 +3,6 @@ package net.sourceforge.ondex.ovtk2.ui.menu.actions;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
@@ -11,6 +10,8 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2Desktop;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2ResourceAssesor;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
 import net.sourceforge.ondex.ovtk2.ui.toolbars.OVTK2ToolBar;
+import org.jungrapht.visualization.selection.MutableSelectedState;
+import org.jungrapht.visualization.selection.SelectedState;
 
 /**
  * Listens to action events specific to the selecting menu.
@@ -31,36 +32,36 @@ public class SelectingMenuAction implements ActionListener {
 		// select all visible nodes
 		if (cmd.equals("allnodes")) {
 			if (viewer != null) {
-				PickedState<ONDEXConcept> pickState = viewer.getVisualizationViewer().getPickedVertexState();
+				MutableSelectedState<ONDEXConcept> pickState = viewer.getVisualizationViewer().getSelectedVertexState();
 				for (ONDEXConcept n : viewer.getONDEXJUNGGraph().getVertices())
-					pickState.pick(n, true);
+					pickState.select(n, true);
 			}
 		}
 
 		// select all visible edges
 		else if (cmd.equals("alledges")) {
 			if (viewer != null) {
-				PickedState<ONDEXRelation> pickState = viewer.getVisualizationViewer().getPickedEdgeState();
+				MutableSelectedState<ONDEXRelation> pickState = viewer.getVisualizationViewer().getSelectedEdgeState();
 				for (ONDEXRelation e : viewer.getONDEXJUNGGraph().getEdges())
-					pickState.pick(e, true);
+					pickState.select(e, true);
 			}
 		}
 
 		// inverse node selection
 		else if (cmd.equals("inversenodes")) {
 			if (viewer != null) {
-				PickedState<ONDEXConcept> pickState = viewer.getVisualizationViewer().getPickedVertexState();
+				MutableSelectedState<ONDEXConcept> pickState = viewer.getVisualizationViewer().getSelectedVertexState();
 				for (ONDEXConcept n : viewer.getONDEXJUNGGraph().getVertices())
-					pickState.pick(n, !pickState.isPicked(n));
+					pickState.select(n, !pickState.isSelected(n));
 			}
 		}
 
 		// inverse edge selection
 		else if (cmd.equals("inverseedges")) {
 			if (viewer != null) {
-				PickedState<ONDEXRelation> pickState = viewer.getVisualizationViewer().getPickedEdgeState();
+				MutableSelectedState<ONDEXRelation> pickState = viewer.getVisualizationViewer().getSelectedEdgeState();
 				for (ONDEXRelation e : viewer.getONDEXJUNGGraph().getEdges())
-					pickState.pick(e, !pickState.isPicked(e));
+					pickState.select(e, !pickState.isSelected(e));
 			}
 		}
 
@@ -75,11 +76,11 @@ public class SelectingMenuAction implements ActionListener {
 				graph.setVisibility(c, true);
 
 				// pick tag concept only
-				PickedState<ONDEXConcept> pickState = viewer.getVisualizationViewer().getPickedVertexState();
+				MutableSelectedState<ONDEXConcept> pickState = viewer.getVisualizationViewer().getSelectedVertexState();
 				pickState.clear();
-				pickState.pick(c, true);
+				pickState.select(c, true);
 
-				// perform zoom in to picked concept
+				// perform zoom in to Selected concept
 				desktop.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, OVTK2ToolBar.ZOOMIN));
 			}
 		}

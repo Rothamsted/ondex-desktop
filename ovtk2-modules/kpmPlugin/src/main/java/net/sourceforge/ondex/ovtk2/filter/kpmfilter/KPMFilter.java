@@ -965,8 +965,7 @@ public class KPMFilter extends OVTK2Filter implements ActionListener {
                 }
 
                 // propagate change to viewer
-                viewer.getVisualizationViewer().getModel().fireStateChanged();
-            }
+                viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
             
             edit.end();
             viewer.undoManager.addEdit(edit);

@@ -3,12 +3,12 @@ package net.sourceforge.ondex.ovtk2.metagraph;
 import java.util.Iterator;
 import java.util.Set;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.core.RelationType;
 import net.sourceforge.ondex.core.util.BitSetFunctions;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
+import org.jungrapht.visualization.layout.algorithms.util.Pair;
 
 /**
  * Represents relations of a RelationType in the AbstractONDEXGraph.
@@ -73,16 +73,16 @@ public class ONDEXMetaRelation extends ONDEXMetaEntity {
 		Set<ONDEXRelation> all = BitSetFunctions.copy(graph.getRelationsOfRelationType((RelationType) id));
 
 		// get relations of first concept class
-		all.retainAll(graph.getRelationsOfConceptClass(pair.getFirst()));
+		all.retainAll(graph.getRelationsOfConceptClass(pair.first));
 
 		// get relations of second concept class
-		all.retainAll(graph.getRelationsOfConceptClass(pair.getSecond()));
+		all.retainAll(graph.getRelationsOfConceptClass(pair.second));
 
 		// sanity check to preserve directionality of relations
 		Iterator<ONDEXRelation> it = all.iterator();
 		while (it.hasNext()) {
 			ONDEXRelation r = it.next();
-			if (!r.getFromConcept().getOfType().equals(pair.getFirst()))
+			if (!r.getFromConcept().getOfType().equals(pair.first))
 				it.remove();
 		}
 		return all;

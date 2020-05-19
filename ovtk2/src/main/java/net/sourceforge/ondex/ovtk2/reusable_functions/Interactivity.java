@@ -6,12 +6,12 @@ import static net.sourceforge.ondex.tools.functions.ControledVocabularyHelper.cr
 
 import java.util.Set;
 
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXGraph;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.tools.subgraph.Subgraph;
+import org.jungrapht.visualization.selection.SelectedState;
 
 /**
  * Collection of functions to do with user interaction with the graph.
@@ -30,7 +30,7 @@ public class Interactivity {
 	 * @return set of Ondex concepts
 	 */
 	public static Set<ONDEXConcept> getPickedConcepts(OVTK2PropertiesAggregator viewer) {
-		return viewer.getPickedNodes();
+		return viewer.getSelectedNodes();
 	}
 
 	/**
@@ -39,7 +39,7 @@ public class Interactivity {
 	 * @return set of Ondex relations
 	 */
 	public static Set<ONDEXRelation> getPickedRelations(OVTK2PropertiesAggregator viewer) {
-		return viewer.getPickedEdges();
+		return viewer.getSelectedEdges();
 	}
 
 	/**
@@ -49,7 +49,7 @@ public class Interactivity {
 	 */
 	public static Subgraph getPickedSubgraph(OVTK2PropertiesAggregator viewer) {
 		ONDEXGraph graph = viewer.getONDEXJUNGGraph();
-		return new Subgraph(viewer.getPickedNodes(), viewer.getPickedEdges(), graph);
+		return new Subgraph(viewer.getSelectedNodes(), viewer.getSelectedEdges(), graph);
 	}
 
 	/**
@@ -65,15 +65,15 @@ public class Interactivity {
 		ONDEXGraph graph = viewer.getONDEXJUNGGraph();
 		ONDEXConcept context = graph.getFactory().createConcept(name, createDataSource(graph, "unknown"), createCC(graph, "Thing"), createEvidence(graph, "manual"));
 		context.createConceptName(name, true);
-		PickedState<ONDEXRelation> stateE = viewer.getVisualizationViewer().getPickedEdgeState();
+		SelectedState<ONDEXRelation> stateE = viewer.getVisualizationViewer().getSelectedEdgeState();
 
-		Set<ONDEXRelation> setE = stateE.getPicked();
+		Set<ONDEXRelation> setE = stateE.getSelected();
 		for (ONDEXRelation e : setE) {
 			graph.getRelation(e.getId()).addTag(context);
 		}
 
-		PickedState<ONDEXConcept> stateN = viewer.getVisualizationViewer().getPickedVertexState();
-		Set<ONDEXConcept> setN = stateN.getPicked();
+		SelectedState<ONDEXConcept> stateN = viewer.getVisualizationViewer().getSelectedVertexState();
+		Set<ONDEXConcept> setN = stateN.getSelected();
 		for (ONDEXConcept n : setN) {
 			graph.getConcept(n.getId()).addTag(context);
 		}

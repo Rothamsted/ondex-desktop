@@ -1,5 +1,24 @@
 package net.sourceforge.ondex.ovtk2.layout;
 
+import net.sourceforge.ondex.core.Attribute;
+import net.sourceforge.ondex.core.AttributeName;
+import net.sourceforge.ondex.core.ConceptClass;
+import net.sourceforge.ondex.core.ONDEXConcept;
+import net.sourceforge.ondex.core.ONDEXRelation;
+import net.sourceforge.ondex.ovtk2.ui.OVTK2Desktop;
+import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import net.sourceforge.ondex.ovtk2.util.AppearanceSynchronizer;
+import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
+import org.jungrapht.visualization.MultiLayerTransformer;
+import org.jungrapht.visualization.VisualizationServer.Paintable;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
+
+import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -19,30 +38,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import javax.swing.BoxLayout;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.border.TitledBorder;
-
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.visualization.Layer;
-import edu.uci.ics.jung.visualization.VisualizationServer.Paintable;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import net.sourceforge.ondex.core.Attribute;
-import net.sourceforge.ondex.core.AttributeName;
-import net.sourceforge.ondex.core.ConceptClass;
-import net.sourceforge.ondex.core.ONDEXConcept;
-import net.sourceforge.ondex.core.ONDEXRelation;
-import net.sourceforge.ondex.ovtk2.ui.OVTK2Desktop;
-import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
-import net.sourceforge.ondex.ovtk2.util.AppearanceSynchronizer;
-import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import static org.jungrapht.visualization.MultiLayerTransformer.*;
 
 /**
  * Layouter which places each concept class on a separate hierarchical layer.
@@ -102,9 +98,9 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 	 * .Dimension)
 	 */
 
-	@Override
+//	@Override
 	public void setSize(Dimension d) {
-		super.setSize(d);
+//		super.setSize(d.height, d.height);
 		initialize();
 	}
 
@@ -119,8 +115,8 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 			viewer.removePreRenderPaintable(grid);
 		grid = null;
 
-		Dimension d = getSize();
-		Graph<ONDEXConcept, ONDEXRelation> graph = this.getGraph();
+		Dimension d = new Dimension(layoutModel.getWidth(), layoutModel.getHeight());
+		Graph<ONDEXConcept, ONDEXRelation> graph = this.graph;
 		if (graph != null && d != null) {
 
 			double height = d.getHeight();
@@ -136,7 +132,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 			if (!box.getSelectedItem().equals("None")) {
 				// get nodes per attribute name value
 				AttributeName an = (AttributeName) box.getSelectedItem();
-				ONDEXConcept[] nodes = graph.getVertices().toArray(
+				ONDEXConcept[] nodes = graph.vertexSet().toArray(
 						new ONDEXConcept[0]);
 				for (int i = 0; i < nodes.length; i++) {
 					ONDEXConcept n = nodes[i];
@@ -167,7 +163,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 				}
 			} else {
 				// get nodes per concept classes
-				ONDEXConcept[] nodes = graph.getVertices().toArray(
+				ONDEXConcept[] nodes = graph.vertexSet().toArray(
 						new ONDEXConcept[0]);
 				for (int i = 0; i < nodes.length; i++) {
 					ONDEXConcept n = nodes[i];
@@ -233,8 +229,10 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 					double offset = spacing / 2;
 
 					for (int l = 0; l < list.length; l++) {
-						Point2D coord = transform(list[l]);
-						coord.setLocation(offset + l * spacing, verticalOffset
+//						Point coord = apply(list[l]);
+//						coord.setLocation(offset + l * spacing, verticalOffset
+//								+ j * verticalSpacing);
+						layoutModel.set(list[l], offset + l * spacing, verticalOffset
 								+ j * verticalSpacing);
 
 						progress++;
@@ -254,7 +252,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 			} else {
 
 				// layout all concepts on one big line
-				ONDEXConcept[] vertices = getGraph().getVertices().toArray(
+				ONDEXConcept[] vertices = graph.vertexSet().toArray(
 						new ONDEXConcept[0]);
 
 				// calculate equal spacing
@@ -264,8 +262,9 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 				double offset = spacing / 2;
 
 				for (int i = 0; i < vertices.length; i++) {
-					Point2D coord = transform(vertices[i]);
-					coord.setLocation(offset + i * spacing, height / 2);
+//					Point2D coord = (vertices[i]);
+//					coord.setLocation(offset + i * spacing, height / 2);
+					layoutModel.set(vertices[i], offset + i * spacing, height / 2);
 
 					progress++;
 					if (cancelled)
@@ -282,13 +281,13 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 	 */
 	static class DataGrid<V, E> implements Paintable {
 
-		Layout<V, E> layout;
+		LayoutModel<V> layout;
 		VisualizationViewer<V, E> vv;
 		Map<Comparable<?>, Map<V, Integer>> comparable2nodes;
 
 		public DataGrid(VisualizationViewer<V, E> vv,
 				Map<Comparable<?>, Map<V, Integer>> comparable2nodes) {
-			this.layout = vv.getGraphLayout();
+			this.layout = vv.getVisualizationModel().getLayoutModel();
 			this.vv = vv;
 			this.comparable2nodes = comparable2nodes;
 		}
@@ -314,7 +313,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 
 			// adapting line colours
 			Color old = g.getColor();
-			Color lineColor = vv.getBackground();
+			Color lineColor = vv.getComponent().getBackground();
 			g.setColor(lineColor);
 			g.setColor(Color.gray);
 
@@ -323,11 +322,11 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 			double maxX = Double.NEGATIVE_INFINITY;
 			for (Comparable<?> key : comparable2nodes.keySet()) {
 				for (V n : comparable2nodes.get(key).keySet()) {
-					Point2D p = layout.transform(n);
-					if (p.getX() < minX)
-						minX = p.getX();
-					if (p.getX() > maxX)
-						maxX = p.getX();
+					Point p = layout.apply(n);
+					if (p.x < minX)
+						minX = p.x;
+					if (p.x > maxX)
+						maxX = p.x;
 				}
 			}
 
@@ -345,12 +344,12 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 
 			// draw one line per category
 			for (Comparable<?> key : comparable2nodes.keySet()) {
-				Point2D p = layout.transform(comparable2nodes.get(key).keySet()
+				Point p = layout.apply(comparable2nodes.get(key).keySet()
 						.iterator().next());
-				Shape line = new Line2D.Double(minX, p.getY(), maxX, p.getY());
+				Shape line = new Line2D.Double(minX, p.y, maxX, p.y);
 				g2d.draw(line);
 				g2d.drawString(key.toString(), (float) minX,
-						(float) (p.getY() - 3));
+						(float) (p.y - 3));
 
 			}
 
@@ -445,7 +444,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 	private void populateComboBox(JComboBox box) {
 		Set<AttributeName> ans = new HashSet<AttributeName>();
 
-		for (ONDEXConcept n : graph.getVertices()) {
+		for (ONDEXConcept n : graph.vertexSet()) {
 			for (Attribute g : n.getAttributes()) {
 				if (!AppearanceSynchronizer.attr
 						.contains(g.getOfType().getId()))
@@ -506,8 +505,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 			int total = 0;
 			for (Comparable<?> cc : comparableLayers) {
 				for (ONDEXConcept node : comparable2nodes.get(cc).keySet()) {
-					for (ONDEXConcept neighbor : this.getGraph().getNeighbors(
-							node)) {
+					for (ONDEXConcept neighbor : Graphs.neighborListOf(graph, node)) {
 						Comparable<?> otherCC = node2comparable.get(neighbor);
 						total += Math.abs(reverse.get(otherCC)
 								- reverse.get(cc));
@@ -524,8 +522,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 			int newtotal = 0;
 			for (Comparable<?> cc : comparableLayers) {
 				for (ONDEXConcept node : comparable2nodes.get(cc).keySet()) {
-					for (ONDEXConcept neighbor : this.getGraph().getNeighbors(
-							node)) {
+					for (ONDEXConcept neighbor : Graphs.neighborListOf(graph, node)) {
 						Comparable<?> otherCC = node2comparable.get(neighbor);
 						newtotal += Math.abs(reverse.get(otherCC)
 								- reverse.get(cc));
@@ -598,8 +595,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 				// look at neighbours
 				int firstTotal = 0;
 				int secondTotal = 0;
-				for (ONDEXConcept neighbor : this.getGraph()
-						.getNeighbors(first)) {
+				for (ONDEXConcept neighbor : Graphs.neighborListOf(this.graph, first)) {
 					Comparable<?> neighborCC = node2comparable.get(neighbor);
 					int neighborPos = comparable2nodes.get(neighborCC).get(
 							neighbor);
@@ -646,7 +642,7 @@ public class ConceptClassHierarchicalLayout extends OVTK2Layouter implements
 
 	@Override
 	public int getMaxProgress() {
-		return 2 * getGraph().getVertexCount();
+		return 2 * graph.vertexSet().size();
 	}
 
 	@Override

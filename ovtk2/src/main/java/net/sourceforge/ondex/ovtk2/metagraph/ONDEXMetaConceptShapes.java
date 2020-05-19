@@ -3,10 +3,10 @@ package net.sourceforge.ondex.ovtk2.metagraph;
 import java.awt.Shape;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.function.Function;
 
-import org.apache.commons.collections15.Transformer;
+import net.sourceforge.ondex.ovtk2.util.VertexShapeFactory;
 
-import edu.uci.ics.jung.visualization.util.VertexShapeFactory;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
@@ -17,7 +17,7 @@ import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
  * @author taubertj
  * 
  */
-public class ONDEXMetaConceptShapes implements Transformer<ONDEXMetaConcept, Shape> {
+public class ONDEXMetaConceptShapes implements Function<ONDEXMetaConcept, Shape> {
 
 	// current ONDEXJUNGGraph
 	private ONDEXJUNGGraph graph = null;
@@ -37,22 +37,8 @@ public class ONDEXMetaConceptShapes implements Transformer<ONDEXMetaConcept, Sha
 	public ONDEXMetaConceptShapes(ONDEXJUNGGraph graph) {
 
 		this.graph = graph;
-		this.shapes = new Hashtable<ConceptClass, Shape>();
-		this.shapeFactory = new VertexShapeFactory<ONDEXMetaConcept>(new Transformer<ONDEXMetaConcept, Integer>() {
-
-			@Override
-			public Integer transform(ONDEXMetaConcept input) {
-				return 20;
-			}
-
-		}, new Transformer<ONDEXMetaConcept, Float>() {
-
-			@Override
-			public Float transform(ONDEXMetaConcept input) {
-				return 1.0f;
-			}
-		});
-
+		this.shapes = new Hashtable<>();
+		this.shapeFactory = new VertexShapeFactory<>(n -> 20, e -> 1.0f);
 		// initialise shapes
 		updateAll();
 	}
@@ -64,20 +50,7 @@ public class ONDEXMetaConceptShapes implements Transformer<ONDEXMetaConcept, Sha
 	 *            new node size
 	 */
 	public void setSize(final int nodeSize) {
-		this.shapeFactory = new VertexShapeFactory<ONDEXMetaConcept>(new Transformer<ONDEXMetaConcept, Integer>() {
-
-			@Override
-			public Integer transform(ONDEXMetaConcept input) {
-				return nodeSize;
-			}
-
-		}, new Transformer<ONDEXMetaConcept, Float>() {
-
-			@Override
-			public Float transform(ONDEXMetaConcept input) {
-				return 1.0f;
-			}
-		});
+		this.shapeFactory = new VertexShapeFactory<>(n -> nodeSize, input -> 1.0f);
 		updateAll();
 	}
 
@@ -88,7 +61,8 @@ public class ONDEXMetaConceptShapes implements Transformer<ONDEXMetaConcept, Sha
 	 *            ONDEXMetaConcept
 	 * @return Shape
 	 */
-	public Shape transform(ONDEXMetaConcept node) {
+	@Override
+	public Shape apply(ONDEXMetaConcept node) {
 		updateShape(node);
 		return shapes.get(node.id);
 	}

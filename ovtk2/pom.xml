@@ -162,29 +162,9 @@
          <version>1.2</version>
       </dependency>
       <dependency>
-         <groupId>net.sf.jung</groupId>
-         <artifactId>jung-api</artifactId>
-         <version>2.0.1</version>
-      </dependency>
-      <dependency>
-         <groupId>net.sf.jung</groupId>
-         <artifactId>jung-jai</artifactId>
-         <version>2.0.1</version>
-      </dependency>
-      <dependency>
-         <groupId>net.sf.jung</groupId>
-         <artifactId>jung-visualization</artifactId>
-         <version>2.0.1</version>
-      </dependency>
-      <dependency>
-         <groupId>net.sf.jung</groupId>
-         <artifactId>jung-algorithms</artifactId>
-         <version>2.0.1</version>
-      </dependency>
-      <dependency>
-         <groupId>net.sf.jung</groupId>
-         <artifactId>jung-graph-impl</artifactId>
-         <version>2.0.1</version>
+         <groupId>com.github.tomnelson</groupId>
+         <artifactId>jungrapht-visualization</artifactId>
+         <version>1.0-RC8</version>
       </dependency>
 			<dependency>
 			  <groupId>javax.help</groupId>

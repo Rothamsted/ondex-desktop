@@ -2,6 +2,7 @@ package net.sourceforge.ondex.ovtk2.ui.menu.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.function.Function;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JRadioButtonMenuItem;
@@ -77,8 +78,7 @@ public class AppearanceMenuAction implements ActionListener {
 					viewer.getNodeDrawPaint().updateAll();
 				}
 				// notify model of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-			}
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 		}
 
 		// toggle node shape Attribute parsing
@@ -89,23 +89,12 @@ public class AppearanceMenuAction implements ActionListener {
 					AppearanceSynchronizer.loadNodeShape(viewer.getONDEXJUNGGraph(), viewer.getNodeShapes());
 				else {
 					viewer.getNodeShapes().setNodeShapeSelection(NodeShapeSelection.NONE);
-					viewer.getNodeShapes().setNodeSizes(new Transformer<ONDEXConcept, Integer>() {
-						@Override
-						public Integer transform(ONDEXConcept input) {
-							return Config.defaultNodeSize;
-						}
-					});
-					viewer.getNodeShapes().setNodeAspectRatios(new Transformer<ONDEXConcept, Float>() {
-						@Override
-						public Float transform(ONDEXConcept input) {
-							return 1.0f;
-						}
-					});
+					viewer.getNodeShapes().setNodeSizes(input -> Config.defaultNodeSize);
+					viewer.getNodeShapes().setNodeAspectRatios(input -> 1.0f);
 					viewer.getNodeShapes().updateAll();
 				}
 				// notify model of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-			}
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 		}
 
 		// toggle edge Attribute colour parsing
@@ -119,8 +108,7 @@ public class AppearanceMenuAction implements ActionListener {
 					viewer.getEdgeColors().updateAll();
 				}
 				// notify model of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-			}
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 		}
 
 		// toggle edge size Attribute parsing
@@ -132,8 +120,7 @@ public class AppearanceMenuAction implements ActionListener {
 				else
 					viewer.getEdgeStrokes().setEdgeSizes(null);
 				// notify model of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-			}
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 		}
 
 		// toggle mouse over for current viewer
@@ -160,8 +147,7 @@ public class AppearanceMenuAction implements ActionListener {
 				boolean selected = ((JCheckBoxMenuItem) ae.getSource()).isSelected();
 				viewer.getEdgeArrows().setShowArrow(selected);
 				// notify model of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-			}
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 		}
 
 		// toggle node label visibility

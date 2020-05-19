@@ -24,17 +24,14 @@ import javax.xml.stream.XMLStreamException;
 import org.codehaus.stax2.XMLOutputFactory2;
 import org.codehaus.stax2.XMLStreamWriter2;
 
-import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedGraph;
-import edu.uci.ics.jung.graph.util.Context;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXGraph;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Desktop;
 import net.sourceforge.ondex.ovtk2.util.ErrorDialog;
+import org.jgrapht.Graph;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * This class represents a GraphML export using Stax2 XML writer.
@@ -80,7 +77,7 @@ public class GraphMLExport implements OVTK2IO {
 	 * @throws XMLStreamException
 	 */
 	private void writeDocument(Graph<ONDEXConcept, ONDEXRelation> graph,
-			XMLStreamWriter2 xmlw) throws XMLStreamException {
+							   XMLStreamWriter2 xmlw) throws XMLStreamException {
 
 		xmlw.writeStartDocument("ISO-8859-1", "1.0");
 		writeGraphml(graph, xmlw);
@@ -174,8 +171,8 @@ public class GraphMLExport implements OVTK2IO {
 
 		xmlw.writeStartElement("graph");
 
-		directed = graph instanceof DirectedGraph;
-		undirected = graph instanceof UndirectedGraph;
+		directed = graph.getType().isDirected();
+		undirected = graph.getType().isUndirected();
 
 		if (directed)
 			xmlw.writeAttribute("edgedefault", "directed");
@@ -193,13 +190,13 @@ public class GraphMLExport implements OVTK2IO {
 		xmlw.writeAttribute("parse.order", "free");
 
 		// write all vertices
-		Iterator<ONDEXConcept> it_v = graph.getVertices().iterator();
+		Iterator<ONDEXConcept> it_v = graph.vertexSet().iterator();
 		while (it_v.hasNext()) {
 			writeNode(it_v.next(), xmlw);
 		}
 
 		// write all edges
-		Iterator<ONDEXRelation> it_e = graph.getEdges().iterator();
+		Iterator<ONDEXRelation> it_e = graph.edgeSet().iterator();
 		while (it_e.hasNext()) {
 			writeEdge(graph, it_e.next(), xmlw);
 		}
@@ -243,7 +240,7 @@ public class GraphMLExport implements OVTK2IO {
 	 * 
 	 * @param graph
 	 *            Graph<V, E>
-	 * @param edges
+	 * @param edge
 	 *            E
 	 * @param xmlw
 	 *            XMLStreamWriter2
@@ -256,18 +253,11 @@ public class GraphMLExport implements OVTK2IO {
 		lastEdge++;
 
 		// get the two endpoints
-		ONDEXConcept source = graph.getSource(edge);
-		ONDEXConcept dest = graph.getDest(edge);
+		ONDEXConcept source = graph.getEdgeSource(edge);
+		ONDEXConcept dest = graph.getEdgeTarget(edge);
 
 		xmlw.writeStartElement("edge");
 		xmlw.writeAttribute("id", edges.get(edge).toString());
-
-		// compare real edge type with default, needed for mixed graphs
-		EdgeType type = graph.getEdgeType(edge);
-		if (type.equals(EdgeType.DIRECTED) && !directed)
-			xmlw.writeAttribute("directed", "true");
-		else if (type.equals(EdgeType.UNDIRECTED) && !undirected)
-			xmlw.writeAttribute("directed", "false");
 
 		xmlw.writeAttribute("source", nodes.get(source).toString());
 		xmlw.writeAttribute("target", nodes.get(dest).toString());
@@ -399,16 +389,16 @@ public class GraphMLExport implements OVTK2IO {
 			throws XMLStreamException {
 
 		// get coordinates of node
-		Point2D coords = viewer.getGraphLayout().transform(vertex);
+		Point coords = viewer.getVisualizationModel().getLayoutModel().apply(vertex);
 
 		// get shape of node
-		Shape shape = viewer.getRenderContext().getVertexShapeTransformer()
-				.transform(vertex);
+		Shape shape = viewer.getRenderContext().getVertexShapeFunction()
+				.apply(vertex);
 		Rectangle bounds = shape.getBounds();
 
 		xmlw.writeStartElement("y:Geometry");
-		xmlw.writeAttribute("x", String.valueOf(coords.getX()));
-		xmlw.writeAttribute("y", String.valueOf(coords.getY()));
+		xmlw.writeAttribute("x", String.valueOf(coords.x));
+		xmlw.writeAttribute("y", String.valueOf(coords.y));
 		xmlw.writeAttribute("width", String.valueOf(bounds.getWidth()));
 		xmlw.writeAttribute("height", String.valueOf(bounds.getHeight()));
 		xmlw.writeEndElement();
@@ -427,8 +417,8 @@ public class GraphMLExport implements OVTK2IO {
 			throws XMLStreamException {
 
 		// translate color to hex
-		Paint p = viewer.getRenderContext().getVertexFillPaintTransformer()
-				.transform(vertex);
+		Paint p = viewer.getRenderContext().getVertexFillPaintFunction()
+				.apply(vertex);
 		Color c = Color.BLACK;
 		if (p instanceof Color)
 			c = (Color) p;
@@ -455,7 +445,7 @@ public class GraphMLExport implements OVTK2IO {
 
 		// translate color to hex
 		Color c = (Color) viewer.getRenderContext()
-				.getVertexDrawPaintTransformer().transform(vertex);
+				.getVertexDrawPaintFunction().apply(vertex);
 		String ccode = (new Formatter()).format("#%1$02X%2$02X%3$02X",
 				c.getRed(), c.getGreen(), c.getBlue()).toString();
 
@@ -479,13 +469,13 @@ public class GraphMLExport implements OVTK2IO {
 			throws XMLStreamException {
 
 		// current label text and font
-		String text = viewer.getRenderContext().getVertexLabelTransformer()
-				.transform(vertex);
-		Font font = viewer.getRenderContext().getVertexFontTransformer()
-				.transform(vertex);
+		String text = viewer.getRenderContext().getVertexLabelFunction()
+				.apply(vertex);
+		Font font = viewer.getRenderContext().getVertexFontFunction()
+				.apply(vertex);
 
 		// get position of label
-		Graphics2D graphics = (Graphics2D) viewer.getGraphics();
+		Graphics2D graphics = (Graphics2D) viewer.getComponent().getGraphics();
 		Rectangle2D bounds = null;
 		if (text != null) {
 			bounds = font
@@ -510,7 +500,7 @@ public class GraphMLExport implements OVTK2IO {
 
 		// text color
 		Color c = (Color) viewer.getRenderContext()
-				.getVertexDrawPaintTransformer().transform(vertex);
+				.getVertexDrawPaintFunction().apply(vertex);
 		String ccode = (new Formatter()).format("#%1$02X%2$02X%3$02X",
 				c.getRed(), c.getGreen(), c.getBlue()).toString();
 
@@ -548,8 +538,8 @@ public class GraphMLExport implements OVTK2IO {
 
 		// convert shape to yFiles shape name
 		String name = "rectangle";
-		Shape shape = viewer.getRenderContext().getVertexShapeTransformer()
-				.transform(vertex);
+		Shape shape = viewer.getRenderContext().getVertexShapeFunction()
+				.apply(vertex);
 		if (shape instanceof Rectangle) {
 			name = "rectangle";
 		} else if (shape instanceof RoundRectangle2D) {
@@ -596,16 +586,16 @@ public class GraphMLExport implements OVTK2IO {
 		xmlw.writeAttribute("ty", "0.0");
 
 		// get two endpoints
-		Point2D source = viewer.getGraphLayout().transform(
-				graph.getSource(edge));
-		Point2D dest = viewer.getGraphLayout().transform(graph.getDest(edge));
+		Point source = viewer.getVisualizationModel().getLayoutModel().apply(
+				graph.getEdgeSource(edge));
+		Point dest = viewer.getVisualizationModel().getLayoutModel().apply(graph.getEdgeTarget(edge));
 		xmlw.writeStartElement("y:Point");
-		xmlw.writeAttribute("x", String.valueOf(source.getX()));
-		xmlw.writeAttribute("y", String.valueOf(source.getY()));
+		xmlw.writeAttribute("x", String.valueOf(source.x));
+		xmlw.writeAttribute("y", String.valueOf(source.y));
 		xmlw.writeEndElement();
 		xmlw.writeStartElement("y:Point");
-		xmlw.writeAttribute("x", String.valueOf(dest.getX()));
-		xmlw.writeAttribute("y", String.valueOf(dest.getY()));
+		xmlw.writeAttribute("x", String.valueOf(dest.x));
+		xmlw.writeAttribute("y", String.valueOf(dest.y));
 		xmlw.writeEndElement();
 
 		xmlw.writeEndElement();
@@ -623,7 +613,7 @@ public class GraphMLExport implements OVTK2IO {
 	private void writeLineStyle(ONDEXRelation edge, XMLStreamWriter2 xmlw)
 			throws XMLStreamException {
 
-		Paint p = viewer.getRenderContext().getEdgeDrawPaintTransformer().transform(edge);
+		Paint p = viewer.getRenderContext().getEdgeDrawPaintFunction().apply(edge);
 		Color c = Color.BLACK;
 		if (p instanceof Color)
 			c = (Color) p;
@@ -651,8 +641,10 @@ public class GraphMLExport implements OVTK2IO {
 	private void writeArrows(Graph<ONDEXConcept, ONDEXRelation> graph, ONDEXRelation edge,
 			XMLStreamWriter2 xmlw) throws XMLStreamException {
 
-		boolean arrow = viewer.getRenderContext().getEdgeArrowPredicate()
-				.evaluate(Context.getInstance(graph, edge));
+		boolean arrow = true;
+		// TODO: decide how to handle this
+//				viewer.getRenderContext().getEdgeArrowPredicate()
+//				.evaluate(Context.getInstance(graph, edge));
 
 		xmlw.writeStartElement("y:Arrows");
 		xmlw.writeAttribute("source", "none");
@@ -676,13 +668,13 @@ public class GraphMLExport implements OVTK2IO {
 			throws XMLStreamException {
 
 		// current label text and font
-		String text = viewer.getRenderContext().getEdgeLabelTransformer()
-				.transform(edge);
-		Font font = viewer.getRenderContext().getEdgeFontTransformer()
-				.transform(edge);
+		String text = viewer.getRenderContext().getEdgeLabelFunction()
+				.apply(edge);
+		Font font = viewer.getRenderContext().getEdgeFontFunction()
+				.apply(edge);
 
 		// get position of label
-		Graphics2D graphics = (Graphics2D) viewer.getGraphics();
+		Graphics2D graphics = (Graphics2D) viewer.getComponent().getGraphics();
 		Rectangle2D bounds = null;
 		if (text != null) {
 			bounds = font
@@ -706,7 +698,7 @@ public class GraphMLExport implements OVTK2IO {
 		}
 
 		// text color
-		Paint p = viewer.getRenderContext().getEdgeDrawPaintTransformer().transform(edge);
+		Paint p = viewer.getRenderContext().getEdgeDrawPaintFunction().apply(edge);
 		Color c = Color.BLACK;
 		if (p instanceof Color)
 			c = (Color) p;
@@ -773,7 +765,7 @@ public class GraphMLExport implements OVTK2IO {
 				XMLStreamWriter2 xmlWriteStream = (XMLStreamWriter2) xmlOutput
 						.createXMLStreamWriter(outStream, "ISO-8859-1");
 
-				writeDocument(viewer.getGraphLayout().getGraph(),
+				writeDocument(viewer.getVisualizationModel().getGraph(),
 						xmlWriteStream);
 
 				xmlWriteStream.flush();

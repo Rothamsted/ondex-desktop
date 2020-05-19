@@ -1,5 +1,24 @@
 package net.sourceforge.ondex.ovtk2.annotator.valuegraph;
 
+import net.sourceforge.ondex.core.AttributeName;
+import net.sourceforge.ondex.core.ONDEXConcept;
+import net.sourceforge.ondex.ovtk2.annotator.OVTK2Annotator;
+import net.sourceforge.ondex.ovtk2.annotator.scaleconcept.ReportingListTransferHandler;
+import net.sourceforge.ondex.ovtk2.config.Config;
+import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import net.sourceforge.ondex.ovtk2.ui.dialog.tablemodel.ColorTableCellRenderer;
+import net.sourceforge.ondex.ovtk2.ui.dialog.tablemodel.ColorTableEditor;
+import net.sourceforge.ondex.ovtk2.util.AppearanceSynchronizer;
+import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
+import net.sourceforge.ondex.ovtk2.util.listmodel.AttributeNameListModel;
+import net.sourceforge.ondex.ovtk2.util.renderer.CustomCellRenderer;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableColumn;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -17,41 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-
-import javax.swing.AbstractCellEditor;
-import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SpringLayout;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
-
-import org.apache.commons.collections15.Transformer;
-
-import net.sourceforge.ondex.core.AttributeName;
-import net.sourceforge.ondex.core.ONDEXConcept;
-import net.sourceforge.ondex.ovtk2.annotator.OVTK2Annotator;
-import net.sourceforge.ondex.ovtk2.annotator.scaleconcept.ReportingListTransferHandler;
-import net.sourceforge.ondex.ovtk2.config.Config;
-import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
-import net.sourceforge.ondex.ovtk2.ui.dialog.tablemodel.ColorTableCellRenderer;
-import net.sourceforge.ondex.ovtk2.ui.dialog.tablemodel.ColorTableEditor;
-import net.sourceforge.ondex.ovtk2.util.AppearanceSynchronizer;
-import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
-import net.sourceforge.ondex.ovtk2.util.listmodel.AttributeNameListModel;
-import net.sourceforge.ondex.ovtk2.util.renderer.CustomCellRenderer;
+import java.util.function.Function;
 
 /**
  * Renders time series or other values as little graphs on nodes.
@@ -231,7 +216,7 @@ public class ValueGraphAnnotator extends OVTK2Annotator implements
 	/**
 	 * Save previous shapes used
 	 */
-	private Transformer<ONDEXConcept, Shape> oldShapes;
+	private Function<ONDEXConcept, Shape> oldShapes;
 
 	/**
 	 * contains series data
@@ -263,7 +248,7 @@ public class ValueGraphAnnotator extends OVTK2Annotator implements
 
 		// save the shapes
 		oldShapes = viewer.getVisualizationViewer().getRenderContext()
-				.getVertexShapeTransformer();
+				.getVertexShapeFunction();
 
 		setLayout(new SpringLayout());
 
@@ -461,7 +446,7 @@ public class ValueGraphAnnotator extends OVTK2Annotator implements
 
 		// reset icon transformer, might have been set by annotator
 		viewer.getVisualizationViewer().getRenderContext()
-				.setVertexIconTransformer(null);
+				.setVertexIconFunction(null);
 
 		// dimensions: series, category, data
 		Map<Integer, Map<Integer, Map<ONDEXConcept, Double>>> seriesCatValues = new HashMap<Integer, Map<Integer, Map<ONDEXConcept, Double>>>();
@@ -495,7 +480,7 @@ public class ValueGraphAnnotator extends OVTK2Annotator implements
 			colours.put(key, color);
 		}
 
-		Transformer<ONDEXConcept, Icon> vertexIconTransformer;
+		Function<ONDEXConcept, Icon> vertexIconTransformer;
 
 		if (!barcharts) {
 
@@ -511,32 +496,27 @@ public class ValueGraphAnnotator extends OVTK2Annotator implements
 		}
 
 		// pick support uses shapes, so requires same size of shape too
-		Transformer<ONDEXConcept, Shape> vertexShapeTransformer = new Transformer<ONDEXConcept, Shape>() {
-
-			@Override
-			public Shape transform(ONDEXConcept arg0) {
-				if (viewer.getVisualizationViewer().getRenderContext()
-						.getVertexIconTransformer() != null) {
-					Icon icon = viewer.getVisualizationViewer()
-							.getRenderContext().getVertexIconTransformer()
-							.transform(arg0);
-					if (icon != null) {
-						int w = icon.getIconWidth();
-						int h = icon.getIconHeight();
-						return new Rectangle(-w / 2, -h / 2, w, h);
-					}
+		Function<ONDEXConcept, Shape> vertexShapeTransformer = arg0 -> {
+			if (viewer.getVisualizationViewer().getRenderContext()
+					.getVertexIconFunction() != null) {
+				Icon icon = viewer.getVisualizationViewer()
+						.getRenderContext().getVertexIconFunction()
+						.apply(arg0);
+				if (icon != null) {
+					int w = icon.getIconWidth();
+					int h = icon.getIconHeight();
+					return new Rectangle(-w / 2, -h / 2, w, h);
 				}
-				return oldShapes.transform(arg0);
 			}
+			return oldShapes.apply(arg0);
 		};
 
 		// update visualisation
 		viewer.getVisualizationViewer().getRenderContext()
-				.setVertexIconTransformer(vertexIconTransformer);
+				.setVertexIconFunction(vertexIconTransformer);
 		viewer.getVisualizationViewer().getRenderContext()
-				.setVertexShapeTransformer(vertexShapeTransformer);
-		viewer.getVisualizationViewer().getModel().fireStateChanged();
-		viewer.getVisualizationViewer().repaint();
+				.setVertexShapeFunction(vertexShapeTransformer);
+		viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();viewer.getVisualizationViewer().repaint();
 	}
 
 	/**

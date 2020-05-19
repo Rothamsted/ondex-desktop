@@ -5,10 +5,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
 
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 public class LayoutNeighbours {
 
@@ -23,12 +24,12 @@ public class LayoutNeighbours {
 	public static void layoutNodes(VisualizationViewer<ONDEXConcept, ONDEXRelation> vv, ONDEXConcept center, Set<ONDEXConcept> neighbours) {
 
 		// get position of centre node
-		Layout<ONDEXConcept, ONDEXRelation> layout = vv.getGraphLayout();
-		Point2D c;
+		LayoutModel<ONDEXConcept> layout = vv.getVisualizationModel().getLayoutModel();
+		Point c;
 		if (center == null)
-			c = vv.getCenter();
+			c = Point.of(vv.getCenter().getX(), vv.getCenter().getY());
 		else
-			c = layout.transform(center);
+			c = layout.apply(center);
 
 		// layout all concepts on one big circle
 		ONDEXConcept[] vertices = neighbours.toArray(new ONDEXConcept[0]);
@@ -66,14 +67,9 @@ public class LayoutNeighbours {
 		}
 
 		for (int i = 0; i < vertices.length; i++) {
-			Point2D coord = layout.transform(vertices[i]);
-
-			double xp = c.getX() + Math.sin(startRadians) * circleradius;
-			double yp = c.getY() + Math.cos(startRadians) * circleradius;
-
-			coord.setLocation(xp, yp);
-
-			layout.setLocation(vertices[i], coord);
+			double xp = c.x + Math.sin(startRadians) * circleradius;
+			double yp = c.y + Math.cos(startRadians) * circleradius;
+			layout.set(vertices[i], xp, yp);
 
 			if (!clockwise) {
 				startRadians += incrementRadians;

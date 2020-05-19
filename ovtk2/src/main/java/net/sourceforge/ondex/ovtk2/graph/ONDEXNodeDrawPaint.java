@@ -4,10 +4,7 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.map.LazyMap;
+import java.util.function.Function;
 
 import net.sourceforge.ondex.core.ONDEXConcept;
 
@@ -17,7 +14,7 @@ import net.sourceforge.ondex.core.ONDEXConcept;
  * @author taubertj
  * @author Matthew Pocock
  */
-public class ONDEXNodeDrawPaint implements Transformer<ONDEXConcept, Paint> {
+public class ONDEXNodeDrawPaint implements Function<ONDEXConcept, Paint> {
 
 	/**
 	 * Different colour selection strategies
@@ -49,18 +46,8 @@ public class ONDEXNodeDrawPaint implements Transformer<ONDEXConcept, Paint> {
 	 * 
 	 */
 	public ONDEXNodeDrawPaint() {
-		this.colors = LazyMap.decorate(new HashMap<ONDEXConcept, Paint>(), new Factory<Paint>() {
-			@Override
-			public Paint create() {
-				return Color.BLACK;
-			}
-		});
-		this.alphas = LazyMap.decorate(new HashMap<ONDEXConcept, Integer>(), new Factory<Integer>() {
-			@Override
-			public Integer create() {
-				return 255;
-			}
-		});
+		this.colors = new HashMap<>();
+		this.alphas = new HashMap<>();
 		this.strategy = NodeDrawPaintSelection.NONE;
 	}
 
@@ -90,10 +77,11 @@ public class ONDEXNodeDrawPaint implements Transformer<ONDEXConcept, Paint> {
 	 *            ONDEXConcept
 	 * @return Color
 	 */
-	public Paint transform(ONDEXConcept node) {
+	@Override
+	public Paint apply(ONDEXConcept node) {
 		if (!colors.containsKey(node))
 			updateColor(node);
-		return colors.get(node);
+		return colors.getOrDefault(node, Color.black);
 	}
 
 	/**
@@ -104,7 +92,7 @@ public class ONDEXNodeDrawPaint implements Transformer<ONDEXConcept, Paint> {
 	 */
 	public Integer transformAlpha(ONDEXConcept node) {
 		if (alphas.containsKey(node))
-			return alphas.get(node);
+			return alphas.getOrDefault(node, 255);
 		else
 			return null;
 	}

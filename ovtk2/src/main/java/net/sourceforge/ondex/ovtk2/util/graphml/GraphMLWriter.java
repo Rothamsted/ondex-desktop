@@ -1,27 +1,22 @@
 package net.sourceforge.ondex.ovtk2.util.graphml;
 
-import java.awt.Color;
-import java.awt.Paint;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import org.jgrapht.Graph;
 
 import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import java.awt.Color;
+import java.awt.Paint;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.functors.ConstantTransformer;
-
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.UndirectedGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.graph.util.Pair;
 
 /**
+ * TODO: may want to use JGrapht export instead...
  * GraphML writer for JUNG graphs based on yFiles GraphML extensions.
  * 
  * @author taubertj
@@ -41,22 +36,22 @@ public class GraphMLWriter<V, E> {
 	XMLOutputFactory factory = null;
 
 	// transformer for node IDs
-	Transformer<V, String> vertex_ids;
+	Function<V, String> vertex_ids;
 
 	// transformer for edge IDs
-	Transformer<E, String> edge_ids;
+	Function<E, String> edge_ids;
 
 	// transformer for node labels
-	Transformer<V, String> vertex_labels;
+	Function<V, String> vertex_labels;
 
 	// transformer for edge labels
-	Transformer<E, String> edge_labels;
+	Function<E, String> edge_labels;
 
 	// transformer for node fill colours
-	Transformer<V, Paint> vertex_fill;
+	Function<V, Paint> vertex_fill;
 
 	// transformer for edge colours
-	Transformer<E, Paint> edge_colours;
+	Function<E, Paint> edge_colours;
 
 	/**
 	 * Constructor expects the JUNG graph to export.
@@ -69,13 +64,13 @@ public class GraphMLWriter<V, E> {
 		this.factory = XMLOutputFactory.newInstance();
 
 		// simple id generator for vertices
-		vertex_ids = new Transformer<V, String>() {
+		vertex_ids = new Function<>() {
 
 			// cache for IDs
-			Map<V, String> map = new HashMap<V, String>();
+			Map<V, String> map = new HashMap<>();
 			int i = 0;
 
-			public String transform(V v) {
+			public String apply(V v) {
 				// generate new id
 				if (!map.containsKey(v)) {
 					map.put(v, "n" + i);
@@ -87,13 +82,13 @@ public class GraphMLWriter<V, E> {
 		};
 
 		// simple id generator for edges
-		edge_ids = new Transformer<E, String>() {
+		edge_ids = new Function<>() {
 
 			// cache for IDs
-			Map<E, String> map = new HashMap<E, String>();
+			Map<E, String> map = new HashMap<>();
 			int i = 0;
 
-			public String transform(E e) {
+			public String apply(E e) {
 				// generate new id
 				if (!map.containsKey(e)) {
 					map.put(e, "e" + i);
@@ -105,27 +100,19 @@ public class GraphMLWriter<V, E> {
 		};
 
 		// default label transformer
-		vertex_labels = new Transformer<V, String>() {
-			public String transform(V v) {
-				return v.toString();
-			}
-		};
+		vertex_labels = Object::toString;
 
 		// default label transformer
-		edge_labels = new Transformer<E, String>() {
-			public String transform(E e) {
-				return e.toString();
-			}
-		};
+		edge_labels = Object::toString;
 
 		// default colour nodes
-		vertex_fill = new ConstantTransformer(Color.ORANGE);
+		vertex_fill = v -> Color.ORANGE;
 
 		// default colour edges
-		edge_colours = new ConstantTransformer(Color.BLACK);
+		edge_colours = e -> Color.BLACK;
 
 		// decide if graph is directed
-		directed = !(graph instanceof UndirectedGraph);
+		directed = !(graph.getType().isDirected());
 	}
 
 	/**
@@ -134,7 +121,7 @@ public class GraphMLWriter<V, E> {
 	 * @param t
 	 *            Transformer<V, String>
 	 */
-	public void setVertexLabelTransformer(Transformer<V, String> t) {
+	public void setVertexLabelTransformer(Function<V, String> t) {
 		this.vertex_labels = t;
 	}
 
@@ -144,7 +131,7 @@ public class GraphMLWriter<V, E> {
 	 * @param t
 	 *            Transformer<E, String>
 	 */
-	public void setEdgeLabelTransformer(Transformer<E, String> t) {
+	public void setEdgeLabelTransformer(Function<E, String> t) {
 		this.edge_labels = t;
 	}
 
@@ -154,7 +141,7 @@ public class GraphMLWriter<V, E> {
 	 * @param t
 	 *            Transformer<V, Paint>
 	 */
-	public void setVertexFillTransformer(Transformer<V, Paint> t) {
+	public void setVertexFillTransformer(Function<V, Paint> t) {
 		this.vertex_fill = t;
 	}
 
@@ -164,7 +151,7 @@ public class GraphMLWriter<V, E> {
 	 * @param t
 	 *            Transformer<E, Paint>
 	 */
-	public void setEdgeColourTransformer(Transformer<E, Paint> t) {
+	public void setEdgeColourTransformer(Function<E, Paint> t) {
 		this.edge_colours = t;
 	}
 
@@ -223,12 +210,12 @@ public class GraphMLWriter<V, E> {
 			xml.writeAttribute("edgedefault", "undirected");
 
 		// write data for nodes
-		for (V v : graph.getVertices()) {
+		for (V v : graph.vertexSet()) {
 			writeNode(xml, v);
 		}
 
 		// write data for edges
-		for (E e : graph.getEdges()) {
+		for (E e : graph.edgeSet()) {
 			writeEdge(xml, e);
 		}
 
@@ -248,30 +235,31 @@ public class GraphMLWriter<V, E> {
 	private void writeEdge(XMLStreamWriter xml, E e) throws XMLStreamException {
 
 		// get edge id
-		String id = edge_ids.transform(e);
+		String id = edge_ids.apply(e);
 
 		// get nodes connected by edge
-		Collection<V> vertices = graph.getIncidentVertices(e);
-
-		// possible hyper edge support
-		Pair<V> endpoints = new Pair<V>(vertices);
-		V v1 = endpoints.getFirst();
-		V v2 = endpoints.getSecond();
+//		Collection<V> vertices = graph.
+//				graph.getIncidentVertices(e);
+//
+//		 possible hyper edge support
+//		Pair<V> endpoints = new Pair<V>(vertices);
+		V v1 = graph.getEdgeSource(e);
+		V v2 = graph.getEdgeTarget(e);
 
 		// write edge element
 		xml.writeStartElement("edge");
 		xml.writeAttribute("id", id);
 
 		// add edge type if doesn't match default
-		EdgeType edge_type = graph.getEdgeType(e);
-		if (directed && edge_type == EdgeType.UNDIRECTED)
-			xml.writeAttribute("directed", "false");
-		if (!directed && edge_type == EdgeType.DIRECTED)
-			xml.writeAttribute("directed", "true");
+//		EdgeType edge_type = graph.getEdgeType(e);
+//		if (directed && edge_type == EdgeType.UNDIRECTED)
+//			xml.writeAttribute("directed", "false");
+//		if (!directed && edge_type == EdgeType.DIRECTED)
+//			xml.writeAttribute("directed", "true");
 
 		// write source and target of edge
-		xml.writeAttribute("source", vertex_ids.transform(v1));
-		xml.writeAttribute("target", vertex_ids.transform(v2));
+		xml.writeAttribute("source", vertex_ids.apply(v1));
+		xml.writeAttribute("target", vertex_ids.apply(v2));
 
 		// write graphics of edge
 		writeEdgeData(xml, e);
@@ -293,7 +281,7 @@ public class GraphMLWriter<V, E> {
 	private void writeEdgeData(XMLStreamWriter xml, E e) throws XMLStreamException {
 
 		// get colour for edge
-		Color c = (Color) edge_colours.transform(e);
+		Color c = (Color) edge_colours.apply(e);
 		String hex = Integer.toHexString(c.getRGB() & 0x00ffffff);
 
 		// write data element
@@ -320,7 +308,7 @@ public class GraphMLWriter<V, E> {
 
 		// write EdgeLabel for edge
 		xml.writeStartElement("y:EdgeLabel");
-		xml.writeCharacters(edge_labels.transform(e));
+		xml.writeCharacters(edge_labels.apply(e));
 		xml.writeEndElement();
 
 		// write BendStyle for edge
@@ -348,7 +336,7 @@ public class GraphMLWriter<V, E> {
 	private void writeNode(XMLStreamWriter xml, V v) throws XMLStreamException {
 
 		// get node id
-		String id = vertex_ids.transform(v);
+		String id = vertex_ids.apply(v);
 
 		// write node element
 		xml.writeStartElement("node");
@@ -374,7 +362,7 @@ public class GraphMLWriter<V, E> {
 	private void writeNodeData(XMLStreamWriter xml, V v) throws XMLStreamException {
 
 		// get colour for node
-		Color c = (Color) vertex_fill.transform(v);
+		Color c = (Color) vertex_fill.apply(v);
 		String hex = Integer.toHexString(c.getRGB() & 0x00ffffff);
 
 		// write data element
@@ -394,7 +382,7 @@ public class GraphMLWriter<V, E> {
 
 		// write NodeLabel for node
 		xml.writeStartElement("y:NodeLabel");
-		xml.writeCharacters(vertex_labels.transform(v));
+		xml.writeCharacters(vertex_labels.apply(v));
 		xml.writeEndElement();
 
 		// close ShapeNode element

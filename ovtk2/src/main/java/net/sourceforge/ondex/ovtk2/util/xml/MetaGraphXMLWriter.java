@@ -6,10 +6,11 @@ import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.stax2.XMLStreamWriter2;
 
-import edu.uci.ics.jung.algorithms.layout.Layout;
 import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaConcept;
 import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2MetaGraph;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Turns MetaGraph visual attributes into XML.
@@ -51,16 +52,16 @@ public class MetaGraphXMLWriter {
 		xmlw.writeStartElement(LAYOUT);
 
 		// write layout coordinates
-		Layout<ONDEXMetaConcept, ONDEXMetaRelation> layout = meta.getViewer().getMetaGraphPanel().getVisualizationViewer().getGraphLayout();
-		for (ONDEXMetaConcept mc : layout.getGraph().getVertices()) {
-			Point2D p = layout.transform(mc);
+		LayoutModel<ONDEXMetaConcept> layout = meta.getViewer().getMetaGraphPanel().getVisualizationViewer().getVisualizationModel().getLayoutModel();
+		for (ONDEXMetaConcept mc : layout.getGraph().vertexSet()) {
+			Point p = layout.apply(mc);
 			xmlw.writeStartElement(POSITION);
 			xmlw.writeAttribute(ID, mc.getConceptClass().getId());
 			xmlw.writeStartElement(X);
-			xmlw.writeDouble(p.getX());
+			xmlw.writeDouble(p.x);
 			xmlw.writeEndElement();
 			xmlw.writeStartElement(Y);
-			xmlw.writeDouble(p.getY());
+			xmlw.writeDouble(p.y);
 			xmlw.writeEndElement();
 			xmlw.writeEndElement();
 		}

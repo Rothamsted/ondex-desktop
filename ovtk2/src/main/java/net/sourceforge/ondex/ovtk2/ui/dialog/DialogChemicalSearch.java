@@ -35,7 +35,6 @@ import javax.swing.undo.StateEdit;
 
 import org.apache.log4j.Logger;
 
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.core.DataSource;
 import net.sourceforge.ondex.core.ONDEXConcept;
@@ -55,6 +54,8 @@ import net.sourceforge.ondex.ovtk2.util.ErrorDialog;
 import net.sourceforge.ondex.ovtk2.util.IdLabel;
 import net.sourceforge.ondex.ovtk2.util.OVTKProgressMonitor;
 import net.sourceforge.ondex.tools.threading.monitoring.IndeterminateProcessAdapter;
+import org.jungrapht.visualization.selection.MutableSelectedState;
+import org.jungrapht.visualization.selection.SelectedState;
 
 /**
  * Showing table for showing search results.
@@ -78,7 +79,7 @@ public class DialogChemicalSearch extends OVTK2Dialog implements ListSelectionLi
 			desktop.setRunningProcess("Search Result Filter");
 
 			ONDEXJUNGGraph jung = viewer.getONDEXJUNGGraph();
-			PickedState<ONDEXConcept> state = viewer.getVisualizationViewer().getPickedVertexState();
+			MutableSelectedState<ONDEXConcept> state = viewer.getVisualizationViewer().getSelectedVertexState();
 			state.clear();
 
 			// contains results
@@ -120,7 +121,7 @@ public class DialogChemicalSearch extends OVTK2Dialog implements ListSelectionLi
 
 			for (ONDEXConcept root : targets) {
 				// highlight seed concepts
-				state.pick(root, true);
+				state.select(root, true);
 				recurse(jung, root, depth);
 			}
 
@@ -144,7 +145,7 @@ public class DialogChemicalSearch extends OVTK2Dialog implements ListSelectionLi
 				jung.setVisibility(relations, true);
 
 				// propagate change to viewer
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			}
 
 			edit.end();
@@ -477,7 +478,7 @@ public class DialogChemicalSearch extends OVTK2Dialog implements ListSelectionLi
 		OVTK2GraphMouse mouse = (OVTK2GraphMouse) viewer.getVisualizationViewer().getGraphMouse();
 		OVTK2PickingMousePlugin picking = mouse.getOVTK2PickingMousePlugin();
 
-		PickedState<ONDEXConcept> state = viewer.getVisualizationViewer().getPickedVertexState();
+		MutableSelectedState<ONDEXConcept> state = viewer.getVisualizationViewer().getSelectedVertexState();
 		state.clear();
 
 		if (!lsm.isSelectionEmpty()) {
@@ -489,7 +490,7 @@ public class DialogChemicalSearch extends OVTK2Dialog implements ListSelectionLi
 					int index = table.convertRowIndexToModel(i);
 					Integer selection = ((IdLabel) model.getValueAt(index, 0)).getId();
 					ONDEXConcept node = graph.getConcept(selection);
-					state.pick(node, true);
+					state.select(node, true);
 
 					// propagate selection in search results to content info
 					if (picking != null) {
@@ -501,7 +502,7 @@ public class DialogChemicalSearch extends OVTK2Dialog implements ListSelectionLi
 				}
 			}
 
-			if (state.getPicked().size() > 1)
+			if (state.getSelected().size() > 1)
 				// fire for zooming into search results
 				OVTK2Desktop.getInstance().actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "zoomin"));
 		}

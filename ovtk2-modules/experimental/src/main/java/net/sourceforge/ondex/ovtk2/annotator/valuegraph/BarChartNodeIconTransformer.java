@@ -3,6 +3,7 @@ package net.sourceforge.ondex.ovtk2.annotator.valuegraph;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.swing.Icon;
 
@@ -18,7 +19,7 @@ import net.sourceforge.ondex.core.ONDEXConcept;
  * @version 01.02.2012
  */
 public class BarChartNodeIconTransformer implements
-		Transformer<ONDEXConcept, Icon> {
+		Function<ONDEXConcept, Icon> {
 
 	/**
 	 * colour for each series
@@ -84,7 +85,7 @@ public class BarChartNodeIconTransformer implements
 	}
 
 	@Override
-	public Icon transform(ONDEXConcept input) {
+	public Icon apply(ONDEXConcept input) {
 		// lazy initialisation of icon map
 		if (!iconMap.containsKey(input)) {
 			BarChartIcon icon = new BarChartIcon(input, data, colours, targMax,

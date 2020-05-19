@@ -17,9 +17,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.functors.ConstantTransformer;
+import java.util.function.Function;
 
 /**
  * A utility class for generating <code>Shape</code>s for drawing vertices. The
@@ -34,14 +32,14 @@ import org.apache.commons.collections15.functors.ConstantTransformer;
  * @hacked by taubertj for static Shape bug
  */
 public class VertexShapeFactory<V> {
-	protected Transformer<V, Integer> vsf;
-	protected Transformer<V, Float> varf;
+	protected Function<V, Integer> vsf;
+	protected Function<V, Float> varf;
 
 	/**
 	 * Creates a <code>VertexShapeFactory</code> with the specified vertex size
 	 * and aspect ratio functions.
 	 */
-	public VertexShapeFactory(Transformer<V, Integer> vsf, Transformer<V, Float> varf) {
+	public VertexShapeFactory(Function<V, Integer> vsf, Function<V, Float> varf) {
 		this.vsf = vsf;
 		this.varf = varf;
 	}
@@ -52,7 +50,7 @@ public class VertexShapeFactory<V> {
 	 */
 	@SuppressWarnings("unchecked")
 	public VertexShapeFactory() {
-		this(new ConstantTransformer(10), new ConstantTransformer(1.0f));
+		this(v -> 0, e -> 1.0f);
 	}
 
 	private static final Rectangle2D theRectangle = new Rectangle2D.Float();
@@ -62,8 +60,8 @@ public class VertexShapeFactory<V> {
 	 * this instance's size and aspect ratio functions for this vertex.
 	 */
 	public Rectangle2D getRectangle(V v) {
-		float width = vsf.transform(v);
-		float height = width * varf.transform(v);
+		float width = vsf.apply(v);
+		float height = width * varf.apply(v);
 		float h_offset = -(width / 2);
 		float v_offset = -(height / 2);
 		theRectangle.setFrame(h_offset, v_offset, width, height);

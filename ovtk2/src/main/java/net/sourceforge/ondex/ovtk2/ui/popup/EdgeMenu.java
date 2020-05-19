@@ -21,7 +21,6 @@ import java.util.TreeMap;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.core.util.QuerySetParser;
@@ -29,6 +28,7 @@ import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.config.OVTK2PluginLoader;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
 import net.sourceforge.ondex.ovtk2.util.ErrorDialog;
+import org.jungrapht.visualization.VisualizationViewer;
 
 /**
  * Menu shown on right click on edges.
@@ -58,7 +58,7 @@ public class EdgeMenu extends JPopupMenu implements EdgeMenuListener<ONDEXConcep
 	}
 
 	private Set<ONDEXRelation> getMultipleEdges(OVTK2Viewer viewer, ONDEXRelation edge) {
-		Set<ONDEXRelation> pickedEdges = viewer.getPickedEdges();
+		Set<ONDEXRelation> pickedEdges = viewer.getSelectedEdges();
 		if (!pickedEdges.contains(edge))
 			pickedEdges = Collections.singleton(edge);
 		return pickedEdges;
@@ -151,9 +151,9 @@ public class EdgeMenu extends JPopupMenu implements EdgeMenuListener<ONDEXConcep
 		add(relationInfo.getItem());
 
 		// SWAT4LS - 2010 demo
-		boolean selectedRelations = (viewer.getPickedEdges().size() != 0 || edges != null) ? true : false;
+		boolean selectedRelations = (viewer.getSelectedEdges().size() != 0 || edges != null) ? true : false;
 		;
-		boolean selectedConcepts = viewer.getPickedNodes().size() == 0 ? false : true;
+		boolean selectedConcepts = viewer.getSelectedNodes().size() == 0 ? false : true;
 
 		boolean empty = true;
 		JMenu querry = new JMenu("Query");

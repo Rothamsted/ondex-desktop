@@ -3,6 +3,7 @@ package net.sourceforge.ondex.ovtk2.graph;
 import java.awt.Shape;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.Transformer;
@@ -18,7 +19,7 @@ import net.sourceforge.ondex.ovtk2.util.VertexShapeFactory;
  * @author taubertj
  * @author Matthew Pocock
  */
-public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
+public class ONDEXNodeShapes implements Function<ONDEXConcept, Shape> {
 
 	/**
 	 * Different shape selection strategies
@@ -37,19 +38,12 @@ public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
 
 	static {
 		// vertex shape factory with default sizes/aspect
-		VertexShapeFactory<ONDEXConcept> staticShapeFactory = new VertexShapeFactory<ONDEXConcept>(new Transformer<ONDEXConcept, Integer>() {
-			@Override
-			public Integer transform(ONDEXConcept input) {
-				if (input != null)
-					return Config.getSizeForConceptClass(input.getOfType());
-				return Config.defaultNodeSize;
-			}
-		}, new Transformer<ONDEXConcept, Float>() {
-			@Override
-			public Float transform(ONDEXConcept input) {
-				return 1.0f;
-			}
-		});
+		VertexShapeFactory<ONDEXConcept> staticShapeFactory = new VertexShapeFactory<>(
+				input -> {
+					if (input != null)
+						return Config.getSizeForConceptClass(input.getOfType());
+					return Config.defaultNodeSize;
+				}, input ->  1.0f);
 		// default cases
 		final Shape defaultShape = staticShapeFactory.getEllipse(null);
 		id2shape = LazyMap.decorate(new HashMap<Integer, Shape>(), new Factory<Shape>() {
@@ -158,33 +152,23 @@ public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
 	/**
 	 * vertex aspect ratio
 	 */
-	private Transformer<ONDEXConcept, Float> varf;
+	private Function<ONDEXConcept, Float> varf;
 
 	/**
 	 * vertex size function
 	 */
-	private Transformer<ONDEXConcept, Integer> vsf;
+	private Function<ONDEXConcept, Integer> vsf;
 
 	/**
 	 * Initialises the shapes for the nodes in the graph.
 	 * 
 	 */
 	public ONDEXNodeShapes() {
-		this.shapes = new HashMap<ONDEXConcept, Shape>();
-		this.shapeIDs = new HashMap<ONDEXConcept, Integer>();
-		this.varf = new Transformer<ONDEXConcept, Float>() {
-			@Override
-			public Float transform(ONDEXConcept input) {
-				return 1.0f;
-			}
-		};
-		this.vsf = new Transformer<ONDEXConcept, Integer>() {
-			@Override
-			public Integer transform(ONDEXConcept input) {
-				return Config.getSizeForConceptClass(input.getOfType());
-			}
-		};
-		this.shapeFactory = new VertexShapeFactory<ONDEXConcept>(vsf, varf);
+		this.shapes = new HashMap<>();
+		this.shapeIDs = new HashMap<>();
+		this.varf = input -> 1.0f;
+		this.vsf = input -> Config.getSizeForConceptClass(input.getOfType());
+		this.shapeFactory = new VertexShapeFactory<>(vsf, varf);
 	}
 
 	/**
@@ -201,7 +185,7 @@ public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
 	 * 
 	 * @return
 	 */
-	public Transformer<ONDEXConcept, Float> getNodeAspectRatios() {
+	public Function<ONDEXConcept, Float> getNodeAspectRatios() {
 		return varf;
 	}
 
@@ -210,7 +194,7 @@ public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
 	 * 
 	 * @return
 	 */
-	public Transformer<ONDEXConcept, Integer> getNodeSizes() {
+	public Function<ONDEXConcept, Integer> getNodeSizes() {
 		return vsf;
 	}
 
@@ -220,9 +204,9 @@ public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
 	 * @param varf
 	 *            node aspect ratio transformer
 	 */
-	public void setNodeAspectRatios(Transformer<ONDEXConcept, Float> varf) {
+	public void setNodeAspectRatios(Function<ONDEXConcept, Float> varf) {
 		this.varf = varf;
-		this.shapeFactory = new VertexShapeFactory<ONDEXConcept>(vsf, varf);
+		this.shapeFactory = new VertexShapeFactory<>(vsf, varf);
 	}
 
 	/**
@@ -231,9 +215,9 @@ public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
 	 * @param vsf
 	 *            node size transformer
 	 */
-	public void setNodeSizes(Transformer<ONDEXConcept, Integer> vsf) {
+	public void setNodeSizes(Function<ONDEXConcept, Integer> vsf) {
 		this.vsf = vsf;
-		this.shapeFactory = new VertexShapeFactory<ONDEXConcept>(vsf, varf);
+		this.shapeFactory = new VertexShapeFactory<>(vsf, varf);
 	}
 
 	/**
@@ -253,7 +237,7 @@ public class ONDEXNodeShapes implements Transformer<ONDEXConcept, Shape> {
 	 *            ONDEXConcept
 	 * @return Shape
 	 */
-	public Shape transform(ONDEXConcept node) {
+	public Shape apply(ONDEXConcept node) {
 		if (!shapes.containsKey(node))
 			updateShape(node);
 		// sanity check in case loading hasn't finished

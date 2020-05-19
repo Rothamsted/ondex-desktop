@@ -14,13 +14,13 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.border.TitledBorder;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import net.sourceforge.ondex.core.RelationType;
 import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaConcept;
 import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaGraph;
 import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
+import org.jungrapht.visualization.VisualizationViewer;
 
 public class MetaRelationMenu extends JPopupMenu {
 
@@ -73,7 +73,7 @@ public class MetaRelationMenu extends JPopupMenu {
 		/**
 		 * 
 		 * @see net.sourceforge.ondex.ovtk2.ui.popup.EdgeMenuListener#setEdgeAndView(java.lang.Object,
-		 *      edu.uci.ics.jung.visualization.VisualizationViewer)
+		 *      VisualizationViewer)
 		 */
 		@Override
 		public void setEdgeAndView(ONDEXMetaRelation edge, VisualizationViewer<ONDEXMetaConcept, ONDEXMetaRelation> visComp) {
@@ -150,7 +150,7 @@ public class MetaRelationMenu extends JPopupMenu {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			viewer.getMetaGraphPanel().getVisualizationViewer().getModel().fireStateChanged();
+			viewer.getMetaGraphPanel().getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 
 		}
 

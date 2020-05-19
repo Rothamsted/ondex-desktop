@@ -15,12 +15,13 @@ import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 
-import edu.uci.ics.jung.visualization.layout.ObservableCachingLayout;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.layout.OVTK2Layouter;
 import net.sourceforge.ondex.ovtk2.util.VisualisationUtils;
+import org.jungrapht.visualization.layout.algorithms.LayoutAlgorithm;
+import org.jungrapht.visualization.layout.model.LayoutModel;
 
 /**
  * Presents the layout options of current active layout.
@@ -112,10 +113,8 @@ public class OVTK2LayoutOptions extends RegisteredJInternalFrame implements Acti
 	public void setViewer(OVTK2Viewer viewer) {
 		this.viewer = viewer;
 
-		ObservableCachingLayout<ONDEXConcept, ONDEXRelation> layouter = (ObservableCachingLayout<ONDEXConcept, ONDEXRelation>) viewer.getVisualizationViewer().getGraphLayout();
-		if (layouter.getDelegate() instanceof OVTK2Layouter) {
-			setLayouter((OVTK2Layouter) layouter.getDelegate());
-		} else {
+		LayoutAlgorithm<ONDEXConcept> layouter =viewer.getVisualizationViewer().getVisualizationModel().getLayoutAlgorithm();
+		if (!(layouter instanceof OVTK2Layouter)) {
 			this.getContentPane().removeAll();
 			this.getContentPane().setLayout(new GridLayout(1, 1));
 			JLabel label = new JLabel(" Unsupported Layouter.");

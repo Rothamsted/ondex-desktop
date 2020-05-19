@@ -320,12 +320,12 @@ public class ViewMenuAction implements ActionListener, InternalFrameListener {
 		viewer.addPickingListener(contentsdisplay);
 
 		// get currently picked node
-		Set<ONDEXConcept> pickedNodes = viewer.getPickedNodes();
+		Set<ONDEXConcept> pickedNodes = viewer.getSelectedNodes();
 		if (pickedNodes.size() > 0)
 			contentsdisplay.showInfoFor(pickedNodes.iterator().next());
 		else {
 			// if no node selected, try edges
-			Set<ONDEXRelation> pickedEdges = viewer.getPickedEdges();
+			Set<ONDEXRelation> pickedEdges = viewer.getSelectedEdges();
 			if (pickedEdges.size() > 0)
 				contentsdisplay.showInfoFor(pickedEdges.iterator().next());
 		}

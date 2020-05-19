@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -23,9 +24,6 @@ import javax.swing.event.ChangeListener;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ConstantTransformer;
 
-import edu.uci.ics.jung.algorithms.layout.SpringLayout2;
-import edu.uci.ics.jung.algorithms.util.IterativeContext;
-import edu.uci.ics.jung.graph.Graph;
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ONDEXConcept;
@@ -34,6 +32,10 @@ import net.sourceforge.ondex.core.RelationType;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.ovtk2.util.AppearanceSynchronizer;
+import org.jgrapht.Graph;
+import org.jungrapht.visualization.layout.algorithms.SpringLayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.util.IterativeContext;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Layout based on the SpringLayout2 from JUNG taking Attribute values into
@@ -51,7 +53,7 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 	 * @author taubertj
 	 * @version 03.10.2012
 	 */
-	private class EdgeLength implements Transformer<ONDEXRelation, Integer> {
+	private class EdgeLength implements Function<ONDEXRelation, Integer> {
 
 		// cache for edge length
 		Map<ONDEXRelation, Integer> cache;
@@ -111,7 +113,7 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 							newvalue = 2 - ((value - minimum) / diff);
 						else
 							newvalue = 1 + ((value - minimum) / diff);
-						newvalue *= UNITLENGTHFUNCTION.transform(key);
+						newvalue *= UNITLENGTHFUNCTION.apply(key);
 						// System.out.println(rt.getId() + ": " + value + " ->"
 						// + newvalue);
 						cache.put(key, (int) newvalue);
@@ -121,16 +123,15 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 		}
 
 		@Override
-		public Integer transform(ONDEXRelation e) {
+		public Integer apply(ONDEXRelation e) {
 			if (!cache.containsKey(e))
-				return UNITLENGTHFUNCTION.transform(e);
+				return UNITLENGTHFUNCTION.apply(e);
 			return cache.get(e);
 		}
 	}
 
 	// default edge length
-	public static final Transformer<ONDEXRelation, Integer> UNITLENGTHFUNCTION = new ConstantTransformer(
-			20);
+	public static final Function<ONDEXRelation, Integer> UNITLENGTHFUNCTION = v -> 20;
 
 	// attribute name for length value
 	private AttributeName an = null;
@@ -144,7 +145,7 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 	/**
 	 * Wrapped JUNG layout
 	 */
-	private SpringLayout2<ONDEXConcept, ONDEXRelation> layout = null;
+	private SpringLayoutAlgorithm<ONDEXConcept, ONDEXRelation> layout = null;
 
 	// value from JUNG
 	protected int repulsion_range = 100 * 100;
@@ -172,7 +173,7 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 	 */
 	public AttributeSpringLayout(OVTK2PropertiesAggregator viewer) {
 		super(viewer);
-		layout = new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph);
+		layout = new SpringLayoutAlgorithm<>();
 	}
 
 	/**
@@ -184,20 +185,24 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 		String name = (String) box.getSelectedItem();
 		an = aog.getMetaData().getAttributeName(name);
 		if (an == null) {
-			layout = new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
-					UNITLENGTHFUNCTION);
+			layout = SpringLayoutAlgorithm.<ONDEXConcept, ONDEXRelation>builder().withLengthFunction(
+					UNITLENGTHFUNCTION).build();
+//					new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
+//					UNITLENGTHFUNCTION);
 		} else {
-			layout = new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
-					new EdgeLength(an, inverseScaleBox.isSelected()));
+			layout = SpringLayoutAlgorithm.<ONDEXConcept, ONDEXRelation>builder().withLengthFunction(new EdgeLength(an, inverseScaleBox.isSelected())).build();
+//					new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
+//					new EdgeLength(an, inverseScaleBox.isSelected()));
 		}
 		// to scale layout a bit larger
-		Dimension newSize = new Dimension(size.width
-				* sizeMultiplier.getValue(), size.height
+
+		Dimension newSize = new Dimension(layoutModel.getWidth()
+				* sizeMultiplier.getValue(), layoutModel.getHeight()
 				* sizeMultiplier.getValue());
 		layout.setForceMultiplier((double) sliderForce.getValue() / 100.0);
 		layout.setRepulsionRange(sliderRepulsive.getValue());
 		layout.setStretch((double) sliderStretch.getValue() / 100.0);
-		layout.setSize(newSize);
+		layoutModel.setSize(newSize.width, newSize.height);
 	}
 
 	@Override
@@ -205,9 +210,9 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 		return layout.done();
 	}
 
-	@Override
+//	@Override
 	public Graph<ONDEXConcept, ONDEXRelation> getGraph() {
-		return layout.getGraph();
+		return layoutModel.getGraph();
 	}
 
 	@Override
@@ -306,110 +311,112 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 		return panel;
 	}
 
-	@Override
-	public Dimension getSize() {
-		return super.getSize();
-	}
+//	@Override
+//	public Dimension getSize() {
+//		return super.getSize();
+//	}
 
-	@Override
-	public double getX(ONDEXConcept v) {
-		return layout.getX(v);
-	}
+//	@Override
+//	public double getX(ONDEXConcept v) {
+//		return layout.getX(v);
+//	}
 
-	@Override
-	public double getY(ONDEXConcept v) {
-		return layout.getY(v);
-	}
+//	@Override
+//	public double getY(ONDEXConcept v) {
+//		return layout.getY(v);
+//	}
 
-	@Override
-	public void initialize() {
-		layout.initialize();
-	}
+//	@Override
+//	public void initialize() {
+//		layout.initialize();
+//	}
 
 	/**
 	 * This one is an incremental visualisation
 	 */
-	public boolean isIncremental() {
-		return layout.isIncremental();
-	}
+//	public boolean isIncremental() {
+//		return layout.isIncremental();
+//	}
 
-	@Override
+//	@Override
 	public boolean isLocked(ONDEXConcept v) {
-		return layout.isLocked(v);
+		return layoutModel.isLocked(v);
 	}
 
-	@Override
+//	@Override
 	public void lock(boolean lock) {
-		layout.lock(lock);
+		layoutModel.lock(lock);
 	}
 
-	@Override
+//	@Override
 	public void lock(ONDEXConcept v, boolean state) {
-		layout.lock(v, state);
+		layoutModel.lock(v, state);
 	}
 
-	@Override
-	public void reset() {
-		layout.reset();
+//	@Override
+//	public void reset() {
+//		layoutModel.reset();
+//	}
+
+//	@Override
+//	public void setGraph(Graph<ONDEXConcept, ONDEXRelation> graph) {
+//		layout.setGraph(graph);
+//	}
+
+//	@Override
+	public void setInitializer(Function<ONDEXConcept, Point> initializer) {
+		layoutModel.setInitializer(initializer);
 	}
 
-	@Override
-	public void setGraph(Graph<ONDEXConcept, ONDEXRelation> graph) {
-		layout.setGraph(graph);
-	}
-
-	@Override
-	public void setInitializer(Transformer<ONDEXConcept, Point2D> initializer) {
-		layout.setInitializer(initializer);
-	}
-
-	@Override
+//	@Override
 	public void setLocation(ONDEXConcept picked, double x, double y) {
-		layout.setLocation(picked, x, y);
+		layoutModel.set(picked, x, y);
 	}
 
-	@Override
-	public void setLocation(ONDEXConcept picked, Point2D p) {
-		layout.setLocation(picked, p);
+//	@Override
+	public void setLocation(ONDEXConcept picked, Point p) {
+		layoutModel.set(picked, p);
 	}
 
-	@Override
+//	@Override
 	public void setSize(Dimension size) {
-		super.setSize(size);
-		// to scale layout a bit larger
+//		super.setSize(size);
+//		// to scale layout a bit larger
 		if (sizeMultiplier != null) {
 			Dimension newSize = new Dimension(size.width
 					* sizeMultiplier.getValue(), size.height
 					* sizeMultiplier.getValue());
-			layout.setSize(newSize);
+			layoutModel.setSize(newSize.width, newSize.height);
 		} else {
-			layout.setSize(size);
+			layoutModel.setSize(size.width, size.height);
 		}
 	}
 
 	@Override
 	public void setViewer(OVTK2PropertiesAggregator viewer) {
 		super.setViewer(viewer);
-		layout.setGraph(viewer.getONDEXJUNGGraph());
+//		layout.setGraph(viewer.getONDEXJUNGGraph());
 	}
 
 	@Override
 	public void stateChanged(ChangeEvent arg0) {
 		if (layout.done()) {
 			// start a new layout for changed settings
-			Dimension newSize = new Dimension(size.width
-					* sizeMultiplier.getValue(), size.height
+			Dimension newSize = new Dimension(layoutModel.getWidth()
+					* sizeMultiplier.getValue(), layoutModel.getHeight()
 					* sizeMultiplier.getValue());
 			if (an != null)
-				layout = new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
-						new EdgeLength(an, inverseScaleBox.isSelected()));
+				layout = SpringLayoutAlgorithm.<ONDEXConcept,ONDEXRelation>builder().withLengthFunction(
+//						new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
+						new EdgeLength(an, inverseScaleBox.isSelected())).build();
 			else
-				layout = new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
-						UNITLENGTHFUNCTION);
+				layout = SpringLayoutAlgorithm.<ONDEXConcept, ONDEXRelation>builder().withLengthFunction(
+//						new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
+						UNITLENGTHFUNCTION).build();
 			layout.setForceMultiplier((double) sliderForce.getValue() / 100.0);
 			layout.setRepulsionRange(sliderRepulsive.getValue());
 			layout.setStretch((double) sliderStretch.getValue() / 100.0);
-			layout.setSize(newSize);
+			layoutModel.setSize(newSize.width, newSize.height);
 		} else if (arg0.getSource().equals(sliderForce)) {
 			layout.setForceMultiplier((double) sliderForce.getValue() / 100.0);
 		} else if (arg0.getSource().equals(sliderRepulsive)) {
@@ -418,14 +425,15 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 			layout.setStretch((double) sliderStretch.getValue() / 100.0);
 		} else if (arg0.getSource().equals(inverseScaleBox)) {
 			if (an != null)
-				layout = new SpringLayout2<ONDEXConcept, ONDEXRelation>(graph,
-						new EdgeLength(an, inverseScaleBox.isSelected()));
+				layout = SpringLayoutAlgorithm.<ONDEXConcept, ONDEXRelation>builder()
+						.withLengthFunction(
+						new EdgeLength(an, inverseScaleBox.isSelected())).build();
 		} else if (arg0.getSource().equals(sizeMultiplier)) {
 			// to scale layout a bit larger
-			Dimension newSize = new Dimension(size.width
-					* sizeMultiplier.getValue(), size.height
+			Dimension newSize = new Dimension(layoutModel.getWidth()
+					* sizeMultiplier.getValue(), layoutModel.getHeight()
 					* sizeMultiplier.getValue());
-			layout.setSize(newSize);
+			layoutModel.setSize(newSize.width, newSize.height);
 		}
 	}
 
@@ -438,9 +446,9 @@ public class AttributeSpringLayout extends OVTK2Layouter implements
 		}
 	}
 
-	@Override
-	public Point2D transform(ONDEXConcept v) {
-		return layout.transform(v);
+//	@Override
+	public Point apply(ONDEXConcept v) {
+		return layoutModel.apply(v);
 	}
 
 }

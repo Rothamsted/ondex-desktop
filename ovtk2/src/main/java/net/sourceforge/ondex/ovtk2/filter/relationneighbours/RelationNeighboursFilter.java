@@ -26,7 +26,6 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.undo.StateEdit;
 
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import net.sourceforge.ondex.ONDEXPluginArguments;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
@@ -41,6 +40,8 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
 import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
 import net.sourceforge.ondex.ovtk2.util.listmodel.ConceptListModel;
 import net.sourceforge.ondex.ovtk2.util.renderer.CustomCellRenderer;
+import org.jungrapht.visualization.selection.MutableSelectedState;
+import org.jungrapht.visualization.selection.SelectedState;
 
 /**
  * Filter to change the visibility according to relation neighbourhood in graph.
@@ -102,11 +103,11 @@ public class RelationNeighboursFilter extends OVTK2Filter implements ListSelecti
 		list.setSelectedIndex(0);
 
 		// register with pick state
-		PickedState<ONDEXConcept> state = viewer.getVisualizationViewer().getPickedVertexState();
+		MutableSelectedState<ONDEXConcept> state = viewer.getVisualizationViewer().getSelectedVertexState();
 		state.addItemListener(this);
 
 		// check if list is populated
-		Collection<ONDEXConcept> set = state.getPicked();
+		Collection<ONDEXConcept> set = state.getSelected();
 		populateList(set);
 
 		// add to filter GUI
@@ -169,7 +170,7 @@ public class RelationNeighboursFilter extends OVTK2Filter implements ListSelecti
 	/**
 	 * Calls backend filter.
 	 * 
-	 * @throws ParseException
+//	 * @throws ParseException
 	 */
 	private void callFilter() throws Exception {
 		if (targets != null && targets.size() > 0) {
@@ -178,7 +179,7 @@ public class RelationNeighboursFilter extends OVTK2Filter implements ListSelecti
 			desktop.setRunningProcess(this.getName());
 
 			// this will also clear the concept list
-			PickedState<ONDEXConcept> state = viewer.getVisualizationViewer().getPickedVertexState();
+			MutableSelectedState<ONDEXConcept> state = viewer.getVisualizationViewer().getSelectedVertexState();
 			state.clear();
 
 			// contains results
@@ -195,7 +196,7 @@ public class RelationNeighboursFilter extends OVTK2Filter implements ListSelecti
 			for (ONDEXConcept target : targets) {
 				ids.add(String.valueOf(target.getId()));
 				// highlight seed concepts
-				state.pick(target, true);
+				state.select(target, true);
 			}
 			state.addItemListener(this);
 
@@ -232,7 +233,7 @@ public class RelationNeighboursFilter extends OVTK2Filter implements ListSelecti
 				graph.setVisibility(relations, true);
 
 				// propagate change to viewer
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			}
 
 			// notify desktop
@@ -253,15 +254,15 @@ public class RelationNeighboursFilter extends OVTK2Filter implements ListSelecti
 
 	@Override
 	public boolean hasBeenUsed() {
-		viewer.getVisualizationViewer().getPickedVertexState().removeItemListener(this);
+		viewer.getVisualizationViewer().getSelectedVertexState().removeItemListener(this);
 		return used;
 	}
 
 	@Override
 	public void itemStateChanged(ItemEvent e) {
-		populateList(viewer.getPickedNodes());
+		populateList(viewer.getSelectedNodes());
 		// this is for interactive filtering by clicking on graph
-		if (viewer.getPickedNodes().size() == 1 && interactive.isSelected()) {
+		if (viewer.getSelectedNodes().size() == 1 && interactive.isSelected()) {
 			try {
 				callFilter();
 			} catch (Exception e1) {

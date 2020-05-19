@@ -82,7 +82,7 @@ public class EntityURIMenuItem extends JMenuItem {
 		this.setText(name);
 		addActionListener(new ActionListener() {
 			public final void actionPerformed(ActionEvent e) {
-				Cursor cursor = viewer.getVisualizationViewer().getCursor();
+				Cursor cursor = viewer.getVisualizationViewer().getComponent().getCursor();
 				viewer.getVisualizationViewer().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				RootPaneContainer root = findRoot(viewer);
 				root.getGlassPane().setVisible(true);
@@ -114,11 +114,11 @@ public class EntityURIMenuItem extends JMenuItem {
 		AttributeName att = MdHelper.createAttName(graph, "URI", String.class);
 		AttributeName attType = MdHelper.createAttName(graph, "TYPE_URI", String.class);
 
-		Set<ONDEXConcept> cs = new HashSet<ONDEXConcept>(viewer.getPickedNodes());
+		Set<ONDEXConcept> cs = new HashSet<ONDEXConcept>(viewer.getSelectedNodes());
 		if (n != null) {
 			cs.add(n);
 		}
-		Set<ONDEXRelation> rs = new HashSet<ONDEXRelation>(viewer.getPickedEdges());
+		Set<ONDEXRelation> rs = new HashSet<ONDEXRelation>(viewer.getSelectedEdges());
 		if (e != null) {
 			rs.add(e);
 		}
@@ -163,11 +163,11 @@ public class EntityURIMenuItem extends JMenuItem {
 					rs.addAll(graph.getRelationsOfConcept(c));
 				}
 				graph.setVisibility(relations, true);
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 				if (layoutAndCenter.contains(this.name)) {
 					doLayout(viewer, concept.getId(), set);
 					viewer.center();
-					viewer.getVisualizationViewer().getModel().fireStateChanged();
+					viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -215,7 +215,7 @@ public class EntityURIMenuItem extends JMenuItem {
 					relations.addAll(graph.getRelationsOfConcept(c));
 				}
 				graph.setVisibility(relations, true);
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

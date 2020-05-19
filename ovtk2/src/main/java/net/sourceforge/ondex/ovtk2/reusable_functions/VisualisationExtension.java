@@ -51,7 +51,7 @@ public class VisualisationExtension {
 	public static void showRelevantContexts(OVTK2PropertiesAggregator viewer) {
 		ONDEXJUNGGraph graph = viewer.getONDEXJUNGGraph();
 		Set<ONDEXConcept> contexts = new HashSet<ONDEXConcept>();
-		for (ONDEXConcept c : viewer.getPickedNodes().toArray(new ONDEXConcept[0])) {
+		for (ONDEXConcept c : viewer.getSelectedNodes().toArray(new ONDEXConcept[0])) {
 			contexts.addAll(c.getTags());
 		}
 		for (ONDEXConcept contextConcept : contexts) {
@@ -67,7 +67,7 @@ public class VisualisationExtension {
 	 */
 	public static void showContextMembers(OVTK2PropertiesAggregator viewer) {
 		ONDEXJUNGGraph graph = viewer.getONDEXJUNGGraph();
-		for (ONDEXConcept contextConcept : viewer.getPickedNodes().toArray(new ONDEXConcept[0])) {
+		for (ONDEXConcept contextConcept : viewer.getSelectedNodes().toArray(new ONDEXConcept[0])) {
 			graph.setVisibility(graph.getConceptsOfTag(contextConcept), true);
 			graph.setVisibility(graph.getRelationsOfTag(contextConcept), true);
 		}
@@ -88,7 +88,7 @@ public class VisualisationExtension {
 			createCC(viewer.getONDEXJUNGGraph(), s);
 		}
 
-		for (ONDEXConcept c : viewer.getPickedNodes().toArray(new ONDEXConcept[0])) {
+		for (ONDEXConcept c : viewer.getSelectedNodes().toArray(new ONDEXConcept[0])) {
 			for (ONDEXConcept candidate : c.getTags()) {
 				if (selectedClasses.contains(candidate.getOfType()))
 					contexts.add(candidate);
@@ -152,7 +152,7 @@ public class VisualisationExtension {
 			public void run() {
 				ONDEXJUNGGraph graph = viewer.getONDEXJUNGGraph();
 				graph.setVisibility(c, visible);
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 				viewer.getVisualizationViewer().repaint();
 			}
 		});
@@ -164,7 +164,7 @@ public class VisualisationExtension {
 			public void run() {
 				ONDEXJUNGGraph graph = viewer.getONDEXJUNGGraph();
 				graph.setVisibility(r, visible);
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			}
 		});
 	}
@@ -174,7 +174,7 @@ public class VisualisationExtension {
 			public void run() {
 				ONDEXJUNGGraph graph = viewer.getONDEXJUNGGraph();
 				graph.setVisibility(es, visible);
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			}
 		});
 	}
@@ -186,7 +186,7 @@ public class VisualisationExtension {
 				for (ONDEXConcept c : cs) {
 					graph.setVisibility(c, visible);
 				}
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			}
 		});
 	}
@@ -198,7 +198,7 @@ public class VisualisationExtension {
 				for (ONDEXRelation r : rs) {
 					graph.setVisibility(r, visible);
 				}
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			}
 		});
 	}

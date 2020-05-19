@@ -1,11 +1,10 @@
 package net.sourceforge.ondex.ovtk2.metagraph;
 
+import net.sourceforge.ondex.core.ONDEXGraph;
+
 import java.awt.BasicStroke;
 import java.awt.Stroke;
-
-import org.apache.commons.collections15.Transformer;
-
-import net.sourceforge.ondex.core.ONDEXGraph;
+import java.util.function.Function;
 
 /**
  * Provides a transformation from a given ONDEXMetaRelation to a edge stroke.
@@ -13,7 +12,7 @@ import net.sourceforge.ondex.core.ONDEXGraph;
  * @author taubertj
  * 
  */
-public class ONDEXMetaRelationStrokes implements Transformer<ONDEXMetaRelation, Stroke> {
+public class ONDEXMetaRelationStrokes implements Function<ONDEXMetaRelation, Stroke> {
 
 	// default case
 	private Stroke defaultStroke = new BasicStroke(1.0f);
@@ -39,7 +38,8 @@ public class ONDEXMetaRelationStrokes implements Transformer<ONDEXMetaRelation, 
 	 *            ONDEXEdge
 	 * @return String
 	 */
-	public Stroke transform(ONDEXMetaRelation edge) {
+	@Override
+	public Stroke apply(ONDEXMetaRelation edge) {
 		return defaultStroke;
 	}
 

@@ -272,8 +272,7 @@ public class TagFilter extends OVTK2Filter implements ActionListener {
 						setGraphVisible(true);
 
 						// propagate change to viewer
-						viewer.getVisualizationViewer().getModel().fireStateChanged();
-					}
+						viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 				}
 			}
 
@@ -295,8 +294,7 @@ public class TagFilter extends OVTK2Filter implements ActionListener {
 				}
 
 				// propagate change to viewer
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-			}
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 
 			edit.end();
 			viewer.getUndoManager().addEdit(edit);

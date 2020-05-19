@@ -284,8 +284,7 @@ public class DialogConceptName extends OVTK2Dialog {
 
 			// update label of node
 			viewer.getNodeLabels().updateLabel(concept);
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
-		}
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 
 		// cancel dialog
 		else if (cmd.equals(CANCEL)) {

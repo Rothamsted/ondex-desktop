@@ -2,10 +2,7 @@ package net.sourceforge.ondex.ovtk2.graph;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.map.LazyMap;
+import java.util.function.Function;
 
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.core.RelationType;
@@ -16,7 +13,7 @@ import net.sourceforge.ondex.core.RelationType;
  * @author taubertj
  * @author Matthew Pocock
  */
-public class ONDEXEdgeLabels implements Transformer<ONDEXRelation, String> {
+public class ONDEXEdgeLabels implements Function<ONDEXRelation, String> {
 
 	/**
 	 * contains mapping id to label
@@ -38,17 +35,9 @@ public class ONDEXEdgeLabels implements Transformer<ONDEXRelation, String> {
 	 * 
 	 */
 	public ONDEXEdgeLabels() {
-		this.labels = new HashMap<ONDEXRelation, String>();
-		this.mask = LazyMap.decorate(new HashMap<ONDEXRelation, Boolean>(), new Factory<Boolean>() {
-
-			@Override
-			public Boolean create() {
-				// return default mask
-				return defaultMask;
-			}
-		});
+		this.labels = new HashMap<>();
+		this.mask = new HashMap<>();
 	}
-
 	/**
 	 * Mask fillMask
 	 * 
@@ -78,8 +67,8 @@ public class ONDEXEdgeLabels implements Transformer<ONDEXRelation, String> {
 	 *            ONDEXRelation
 	 * @return String
 	 */
-	public String transform(ONDEXRelation edge) {
-		if (!mask.get(edge)) {
+	public String apply(ONDEXRelation edge) {
+		if (!mask.getOrDefault(edge, defaultMask)) {
 			return "";
 		} else {
 			if (!labels.containsKey(edge))

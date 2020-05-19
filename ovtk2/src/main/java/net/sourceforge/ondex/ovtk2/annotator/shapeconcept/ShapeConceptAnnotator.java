@@ -192,7 +192,7 @@ public class ShapeConceptAnnotator extends OVTK2Annotator implements ActionListe
 				if (set.contains(attribute.getValue().toString())) {
 					// preserve current shape size
 					AffineTransform af = new AffineTransform();
-					Rectangle bounds = nodeShapes.transform(c).getBounds();
+					Rectangle bounds = nodeShapes.apply(c).getBounds();
 					double x = bounds.height;
 					double y = bounds.width;
 					af.scale(x / shape.getBounds().height, y / shape.getBounds().width);
@@ -202,8 +202,7 @@ public class ShapeConceptAnnotator extends OVTK2Annotator implements ActionListe
 			}
 
 			// update viewer
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
-			viewer.getVisualizationViewer().repaint();
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();viewer.getVisualizationViewer().repaint();
 
 			used = true;
 		}

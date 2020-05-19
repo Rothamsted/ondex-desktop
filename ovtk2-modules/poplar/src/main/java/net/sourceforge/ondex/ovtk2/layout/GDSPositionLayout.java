@@ -16,13 +16,15 @@ import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import edu.uci.ics.jung.graph.Graph;
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import org.jgrapht.Graph;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Layout per chromosome and GEMLayout.
@@ -156,7 +158,7 @@ public class GDSPositionLayout extends OVTK2Layouter {
 		return panel;
 	}
 
-	@Override
+//	@Override
 	public void initialize() {
 		try {
 			// parse options
@@ -173,7 +175,7 @@ public class GDSPositionLayout extends OVTK2Layouter {
 		}
 
 		// necessary because of visibility usage
-		ONDEXJUNGGraph graph = (ONDEXJUNGGraph) this.getGraph();
+		ONDEXJUNGGraph graph = (ONDEXJUNGGraph) this.graph;
 		if (graph != null) {
 
 			// map concept -> node
@@ -239,6 +241,8 @@ public class GDSPositionLayout extends OVTK2Layouter {
 			gem.horizontalSpacing = this.horizontalSpacing;
 			gem.multi = this.multi;
 			gem.verticalSpacing = this.verticalSpacing;
+			LayoutModel<ONDEXConcept> gemLayoutModel =
+					aViewer.getVisualizationViewer().getVisualizationModel().getLayoutModel();
 
 			// cluster graph without the genes and run layout
 			Set<Graph<ONDEXConcept, ONDEXRelation>> clustered = gem
@@ -253,24 +257,25 @@ public class GDSPositionLayout extends OVTK2Layouter {
 
 			// get locations of GEMLayout
 			for (ONDEXConcept n : graph.getVertices()) {
-				Point2D result = gem.transform(n);
-				if (result.getX() < minNetworkX)
-					minNetworkX = result.getX();
-				if (result.getX() > maxNetworkX)
-					maxNetworkX = result.getX();
-				if (result.getY() < minNetworkY)
-					minNetworkY = result.getY();
-				if (result.getY() > maxNetworkY)
-					maxNetworkY = result.getY();
+				Point result = gemLayoutModel.apply(n);
+				if (result.x < minNetworkX)
+					minNetworkX = result.x;
+				if (result.x > maxNetworkX)
+					maxNetworkX = result.x;
+				if (result.y < minNetworkY)
+					minNetworkY = result.y;
+				if (result.y > maxNetworkY)
+					maxNetworkY = result.y;
 			}
 
 			// set location of all other nodes
 			int sizeNetwork = 0;
 			for (ONDEXConcept n : graph.getVertices()) {
 				// set location of node
-				Point2D result = gem.transform(n);
-				Point2D coord = transform(n);
-				coord.setLocation(result.getX(), result.getY());
+				Point result = gemLayoutModel.apply(n);
+//				Point coord = apply(n);
+//				coord.setLocation(result.getX(), result.getY());
+				layoutModel.set(n, result);
 				sizeNetwork++;
 			}
 
@@ -288,9 +293,9 @@ public class GDSPositionLayout extends OVTK2Layouter {
 			// default size to screen size
 			if (sizeNetwork == 0) {
 				minNetworkX = 0;
-				maxNetworkX = getSize().getWidth();
+				maxNetworkX = layoutModel.getWidth();
 				minNetworkY = 0;
-				maxNetworkY = getSize().getHeight();
+				maxNetworkY = layoutModel.getHeight();
 			}
 
 			// calculate best position for chromosomes
@@ -323,10 +328,11 @@ public class GDSPositionLayout extends OVTK2Layouter {
 						double newvalue = ((value - minBegin) / diff);
 
 						// set location of node
-						Point2D coord = transform(reverse.get(gene));
+//						Point coord = layoutModel.apply(reverse.get(gene));
 						double newY = startY + fifthHeight * newvalue;
 						double newX = startX + currentX;
-						coord.setLocation(newX, newY);
+//						coord.set(newX, newY);
+						layoutModel.set(reverse.get(gene), newX, newY);
 					}
 				}
 				// System.err.println(chromo + " --> " + numGenes + " genes");
@@ -335,7 +341,7 @@ public class GDSPositionLayout extends OVTK2Layouter {
 		}
 	}
 
-	@Override
+//	@Override
 	public void reset() {
 		initialize();
 	}

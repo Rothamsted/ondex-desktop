@@ -80,12 +80,12 @@ public class CustomPopupItem extends EntityMenuItem<ONDEXConcept> {
 
 			// deselect all concepts that don't have a matching CC
 			List<ONDEXConcept> list = new ArrayList<ONDEXConcept>();
-			for (ONDEXConcept concept : viewer.getPickedNodes()) {
+			for (ONDEXConcept concept : viewer.getSelectedNodes()) {
 				if (!isAcceptedConceptClass(concept.getOfType()))
 					list.add(concept);
 			}
 			for (ONDEXConcept concept : list)
-				viewer.getVisualizationViewer().getPickedVertexState().pick(concept, false);
+				viewer.getVisualizationViewer().getSelectedVertexState().select(concept, false);
 
 			// run in a new thread (avoid time consuming operations in AWT
 			// EventQueue)

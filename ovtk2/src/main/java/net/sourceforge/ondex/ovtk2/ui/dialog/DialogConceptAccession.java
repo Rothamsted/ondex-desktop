@@ -29,7 +29,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 
-import edu.uci.ics.jung.graph.util.Pair;
 import net.sourceforge.ondex.core.ConceptAccession;
 import net.sourceforge.ondex.core.DataSource;
 import net.sourceforge.ondex.core.ONDEXConcept;
@@ -37,6 +36,7 @@ import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Dialog;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
 import net.sourceforge.ondex.ovtk2.util.DesktopUtils.CaseInsensitiveMetaDataComparator;
+import org.jungrapht.visualization.layout.algorithms.util.Pair;
 
 /**
  * Showing table for view/edit of concept accessions.
@@ -62,10 +62,10 @@ public class DialogConceptAccession extends OVTK2Dialog {
 			if (arg0 instanceof Pair && arg1 instanceof Pair) {
 				Pair<?> a = (Pair<?>) arg0;
 				Pair<?> b = (Pair<?>) arg1;
-				String a1 = (String) a.getFirst();
-				String a2 = (String) a.getSecond();
-				String b1 = (String) b.getFirst();
-				String b2 = (String) b.getSecond();
+				String a1 = (String) a.first;
+				String a2 = (String) a.second;
+				String b1 = (String) b.first;
+				String b2 = (String) b.second;
 				if (a1.compareTo(b1) == 0) {
 					return a2.compareTo(b2);
 				} else {
@@ -148,9 +148,9 @@ public class DialogConceptAccession extends OVTK2Dialog {
 			}
 			// return existing data
 			if (col == 0) {
-				return keys[row].getFirst();
+				return keys[row].first;
 			} else if (col == 1) {
-				return keys[row].getSecond();
+				return keys[row].second;
 			} else if (col == 2) {
 				return accessions.get(keys[row]);
 			} else if (col == 3) {
@@ -189,7 +189,7 @@ public class DialogConceptAccession extends OVTK2Dialog {
 					// OVTK-349 remove trailing whitespace
 					String accession = (String) value;
 					accession = accession.trim();
-					Pair<String> pair = new Pair<String>(accession, (String) key.getSecond());
+					Pair<String> pair = Pair.of(accession, (String) key.second);
 					accessions.put(pair, ambiguous);
 					this.fireTableDataChanged();
 				}
@@ -200,7 +200,7 @@ public class DialogConceptAccession extends OVTK2Dialog {
 					Pair<?> key = keys[row];
 					Boolean ambiguous = accessions.get(key);
 					accessions.remove(key);
-					Pair<String> pair = new Pair<String>((String) key.getFirst(), (String) value);
+					Pair<String> pair = Pair.of((String) key.first, (String) value);
 					accessions.put(pair, ambiguous);
 					this.fireTableDataChanged();
 				}
@@ -208,14 +208,14 @@ public class DialogConceptAccession extends OVTK2Dialog {
 				else if (col == 2) {
 					Pair<?>[] keys = accessions.keySet().toArray(new Pair[0]);
 					Arrays.sort(keys, comparator);
-					Pair<String> pair = new Pair<String>((String) keys[row].getFirst(), (String) keys[row].getSecond());
+					Pair<String> pair = Pair.of((String) keys[row].first, (String) keys[row].second);
 					accessions.put(pair, (Boolean) value);
 					this.fireTableDataChanged();
 				}
 			} else {
 				// add new row
 				if (col == 0) {
-					Pair<String> pair = new Pair<String>((String) value, "");
+					Pair<String> pair = Pair.of((String) value, "");
 					accessions.put(pair, Boolean.FALSE);
 					this.fireTableRowsInserted(row, row);
 					this.fireTableDataChanged();
@@ -321,9 +321,9 @@ public class DialogConceptAccession extends OVTK2Dialog {
 	/**
 	 * Constructs user input to view/edit a ConceptAccessions.
 	 * 
-	 * @param aog
-	 *            ONDEXGraph to use for meta data
 	 * @param concept
+	 *            ONDEXGraph to use for meta data
+	 * @param viewer
 	 *            ONDEXConcept to add to
 	 */
 	public DialogConceptAccession(ONDEXConcept concept, OVTK2Viewer viewer) {
@@ -355,7 +355,7 @@ public class DialogConceptAccession extends OVTK2Dialog {
 		// get concept accessions from concept
 		Map<Pair<?>, Boolean> accessions = new HashMap<Pair<?>, Boolean>();
 		for (ConceptAccession ca : concept.getConceptAccessions()) {
-			accessions.put(new Pair<String>(ca.getAccession(), ca.getElementOf().getId()), ca.isAmbiguous());
+			accessions.put(Pair.of(ca.getAccession(), ca.getElementOf().getId()), ca.isAmbiguous());
 		}
 
 		// setup table
@@ -401,30 +401,30 @@ public class DialogConceptAccession extends OVTK2Dialog {
 			// get existing concept accessions
 			Map<Pair<?>, Boolean> existing = new HashMap<Pair<?>, Boolean>();
 			for (ConceptAccession ca : concept.getConceptAccessions()) {
-				existing.put(new Pair<String>(ca.getAccession(), ca.getElementOf().getId()), ca.isAmbiguous());
+				existing.put(Pair.of(ca.getAccession(), ca.getElementOf().getId()), ca.isAmbiguous());
 			}
 			Map<Pair<?>, Boolean> accessions = model.getData();
 			// check for positive changes
 			for (Pair<?> pair : accessions.keySet()) {
-				if (((String) pair.getFirst()).trim().length() > 0 && ((String) pair.getSecond()).trim().length() > 0) {
+				if (((String) pair.first).trim().length() > 0 && ((String) pair.second).trim().length() > 0) {
 					// concept accessions not existing
 					if (!existing.containsKey(pair)) {
-						DataSource dataSource = viewer.getONDEXJUNGGraph().getMetaData().getDataSource((String) pair.getSecond());
-						concept.createConceptAccession((String) pair.getFirst(), dataSource, accessions.get(pair));
+						DataSource dataSource = viewer.getONDEXJUNGGraph().getMetaData().getDataSource((String) pair.second);
+						concept.createConceptAccession((String) pair.first, dataSource, accessions.get(pair));
 						existing.put(pair, accessions.get(pair));
 					}
 					// ambiguous different
 					else if (!existing.get(pair).equals(accessions.get(pair))) {
-						DataSource dataSource = viewer.getONDEXJUNGGraph().getMetaData().getDataSource((String) pair.getSecond());
-						concept.getConceptAccession((String) pair.getFirst(), dataSource).setAmbiguous(accessions.get(pair));
+						DataSource dataSource = viewer.getONDEXJUNGGraph().getMetaData().getDataSource((String) pair.second);
+						concept.getConceptAccession((String) pair.first, dataSource).setAmbiguous(accessions.get(pair));
 					}
 				}
 			}
 			// check for deletions
 			for (Pair<?> pair : existing.keySet()) {
 				if (!accessions.containsKey(pair)) {
-					DataSource dataSource = viewer.getONDEXJUNGGraph().getMetaData().getDataSource((String) pair.getSecond());
-					concept.deleteConceptAccession((String) pair.getFirst(), dataSource);
+					DataSource dataSource = viewer.getONDEXJUNGGraph().getMetaData().getDataSource((String) pair.second);
+					concept.deleteConceptAccession((String) pair.first, dataSource);
 				}
 			}
 			try {
@@ -435,7 +435,7 @@ public class DialogConceptAccession extends OVTK2Dialog {
 
 			// update label of node
 			viewer.getNodeLabels().updateLabel(concept);
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		}
 
 		// cancel dialog

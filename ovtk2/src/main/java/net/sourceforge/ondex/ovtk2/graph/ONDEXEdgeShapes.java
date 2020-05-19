@@ -5,17 +5,25 @@ import java.awt.geom.CubicCurve2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.QuadCurve2D;
+import java.util.function.Function;
 
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Context;
-import edu.uci.ics.jung.graph.util.EdgeIndexFunction;
-import edu.uci.ics.jung.graph.util.Pair;
-import edu.uci.ics.jung.visualization.decorators.AbstractEdgeShapeTransformer;
-import edu.uci.ics.jung.visualization.decorators.EdgeShape.IndexedRendering;
-import edu.uci.ics.jung.visualization.decorators.EdgeShape.Loop;
+//import edu.uci.ics.jung.graph.Graph;
+//import edu.uci.ics.jung.graph.util.Context;
+//import edu.uci.ics.jung.graph.util.EdgeIndexFunction;
+//import edu.uci.ics.jung.graph.util.Pair;
+//import edu.uci.ics.jung.visualization.decorators.AbstractEdgeShapeTransformer;
+//import edu.uci.ics.jung.visualization.decorators.EdgeShape.IndexedRendering;
+//import edu.uci.ics.jung.visualization.decorators.EdgeShape.Loop;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.config.Config;
+import org.jgrapht.Graph;
+import org.jungrapht.visualization.decorators.AbstractEdgeShapeFunction;
+import org.jungrapht.visualization.decorators.EdgeShape;
+import org.jungrapht.visualization.decorators.ParallelEdgeShapeFunction;
+import org.jungrapht.visualization.layout.algorithms.util.Pair;
+import org.jungrapht.visualization.util.Context;
+import org.jungrapht.visualization.util.EdgeIndexFunction;
 
 /**
  * Provides a transformation from a given ONDEXReklation to a edge shape.
@@ -23,7 +31,8 @@ import net.sourceforge.ondex.ovtk2.config.Config;
  * @author taubertj
  * @author Matthew Pocock
  */
-public class ONDEXEdgeShapes extends AbstractEdgeShapeTransformer<ONDEXConcept, ONDEXRelation> implements IndexedRendering<ONDEXConcept, ONDEXRelation> {
+public class ONDEXEdgeShapes extends AbstractEdgeShapeFunction<ONDEXConcept, ONDEXRelation>  {
+		//implements Function<ONDEXConcept, ONDEXRelation> {
 
 	public static final String KEYLINE = "line";
 
@@ -115,7 +124,7 @@ public class ONDEXEdgeShapes extends AbstractEdgeShapeTransformer<ONDEXConcept, 
 	 * A convenience instance for other edge shapes to use for self-loop edges
 	 * where parallel instances will not overlay each other.
 	 */
-	protected static Loop<ONDEXConcept, ONDEXRelation> loop = new Loop<ONDEXConcept, ONDEXRelation>();
+	protected static org.jungrapht.visualization.decorators.EdgeShape.Loop<ONDEXConcept, ONDEXRelation> loop = new org.jungrapht.visualization.decorators.EdgeShape.Loop<ONDEXConcept, ONDEXRelation>();
 
 	/**
 	 * Singleton instance of the Line2D edge shape
@@ -153,23 +162,26 @@ public class ONDEXEdgeShapes extends AbstractEdgeShapeTransformer<ONDEXConcept, 
 	 * Get the shape for this edge, returning either the shared instance or, in
 	 * the case of self-loop edges, the Loop shared instance.
 	 */
-	public Shape transform(Context<Graph<ONDEXConcept, ONDEXRelation>, ONDEXRelation> context) {
+	@Override
+	public Shape apply(Context<Graph<ONDEXConcept, ONDEXRelation>, ONDEXRelation> context) {
 		Graph<ONDEXConcept, ONDEXRelation> graph = context.graph;
 		ONDEXRelation e = context.element;
-		Pair<ONDEXConcept> endpoints = graph.getEndpoints(e);
-		if (endpoints != null) {
-			boolean isLoop = endpoints.getFirst().equals(endpoints.getSecond());
+		ONDEXConcept source = graph.getEdgeSource(e);
+		ONDEXConcept target = graph.getEdgeTarget(e);
+//		Pair<ONDEXConcept> endpoints = graph.getEndpoints(e);
+		if (source != null && target != null) {
+			boolean isLoop = source.equals(target);
 			if (isLoop) {
-				return loop.transform(context);
+				return loop.apply(context);
 			}
 		}
 
 		int index = 1;
 		if (parallelEdgeIndexFunction != null) {
-			index = parallelEdgeIndexFunction.getIndex(graph, e);
+			index = parallelEdgeIndexFunction.apply(Context.getInstance(graph, e));
 		}
 
-		float controlY = control_offset_increment + control_offset_increment * index;
+		float controlY = controlOffsetIncrement + controlOffsetIncrement * index;
 
 		switch (shape) {
 		case QUAD:

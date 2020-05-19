@@ -2,8 +2,7 @@ package net.sourceforge.ondex.ovtk2.metagraph;
 
 import java.util.Hashtable;
 import java.util.Map;
-
-import org.apache.commons.collections15.Transformer;
+import java.util.function.Function;
 
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
@@ -14,7 +13,7 @@ import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
  * @author taubertj
  * 
  */
-public class ONDEXMetaConceptLabels implements Transformer<ONDEXMetaConcept, String> {
+public class ONDEXMetaConceptLabels implements Function<ONDEXMetaConcept, String> {
 
 	// current ONDEXJUNGGraph
 	private ONDEXJUNGGraph graph = null;
@@ -82,7 +81,8 @@ public class ONDEXMetaConceptLabels implements Transformer<ONDEXMetaConcept, Str
 	 *            ONDEXMetaConcept
 	 * @return String
 	 */
-	public String transform(ONDEXMetaConcept node) {
+	@Override
+	public String apply(ONDEXMetaConcept node) {
 		return labels.get(node.id);
 	}
 

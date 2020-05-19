@@ -1,11 +1,11 @@
 package net.sourceforge.ondex.ovtk2.graph;
 
-import org.apache.commons.collections15.Predicate;
-
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Context;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
+import org.jgrapht.Graph;
+import org.jungrapht.visualization.util.Context;
+
+import java.util.function.Predicate;
 
 /**
  * Provides a predicate whether or not to draw arrows at edges.
@@ -43,7 +43,8 @@ public class ONDEXEdgeArrows implements Predicate<Context<Graph<ONDEXConcept, ON
 	 *            Context<Graph<ONDEXNode, ONDEXEdge>, ONDEXEdge>
 	 * @return boolean
 	 */
-	public boolean evaluate(Context<Graph<ONDEXConcept, ONDEXRelation>, ONDEXRelation> object) {
+	@Override
+	public boolean test(Context<Graph<ONDEXConcept, ONDEXRelation>, ONDEXRelation> object) {
 		return showArrow;
 	}
 

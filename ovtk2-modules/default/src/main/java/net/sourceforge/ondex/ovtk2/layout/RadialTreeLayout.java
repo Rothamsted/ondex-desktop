@@ -1,7 +1,22 @@
 package net.sourceforge.ondex.ovtk2.layout;
 
+import net.sourceforge.ondex.core.ONDEXConcept;
+import net.sourceforge.ondex.core.ONDEXRelation;
+import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.apache.commons.collections15.Transformer;
+import org.apache.commons.collections15.map.LazyMap;
+import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
+import org.jungrapht.visualization.layout.model.Point;
+import org.jungrapht.visualization.layout.model.PolarPoint;
+
+import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.BorderLayout;
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,26 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.GroupLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.map.LazyMap;
-
-import edu.uci.ics.jung.algorithms.layout.PolarPoint;
-import edu.uci.ics.jung.graph.Graph;
-import net.sourceforge.ondex.core.ONDEXConcept;
-import net.sourceforge.ondex.core.ONDEXRelation;
-import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
-import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
 
 /**
  * A radial layout for Tree or Forest graphs. Modified to perform pseudo tree
@@ -42,10 +37,10 @@ import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
 public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 
 	// keep track of progress
-	private final Set<ONDEXConcept> allreadyDone = new HashSet<ONDEXConcept>();
+	private final Set<ONDEXConcept> allreadyDone = new HashSet<>();
 
 	// x positions of nodes
-	private final Map<ONDEXConcept, Integer> basePositions = new HashMap<ONDEXConcept, Integer>();
+	private final Map<ONDEXConcept, Integer> basePositions = new HashMap<>();
 
 	// use default
 	private int distX = 10;
@@ -54,25 +49,13 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 	private int distY = 10;
 
 	// final locations after layout
-	private final Map<ONDEXConcept, Point2D> locations = LazyMap.decorate(
-			new HashMap<ONDEXConcept, Point2D>(),
-			new Transformer<ONDEXConcept, Point2D>() {
-				public Point2D transform(ONDEXConcept arg0) {
-					return new Point2D.Double();
-				}
-			});
+	private final Map<ONDEXConcept, Point> locations = new HashMap<>();
 
 	// processing position of current node
-	private final Point m_currentPoint = new Point();
+	private Point m_currentPoint = Point.ORIGIN;
 
 	// coordinates in polar system
-	private final Map<ONDEXConcept, PolarPoint> polarLocations = LazyMap
-			.decorate(new HashMap<ONDEXConcept, PolarPoint>(),
-					new Transformer<ONDEXConcept, PolarPoint>() {
-						public PolarPoint transform(ONDEXConcept arg0) {
-							return new PolarPoint();
-						}
-					});
+	private final Map<ONDEXConcept, PolarPoint> polarLocations = new HashMap<>();
 
 	/**
 	 * build tree for reversed edge direction
@@ -113,14 +96,14 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 	 */
 	void buildTree() {
 
-		this.m_currentPoint.setLocation(0, 20);
+		this.m_currentPoint = Point.of(0, 20);
 		if (roots.size() > 0 && graph != null) {
 			calculateDimensionX(roots);
 			for (ONDEXConcept v : roots) {
 				state = "building tree " + progress;
 				calculateDimensionX(v);
-				m_currentPoint.x += this.basePositions.get(v) / 2 + 50;
-				buildTree(v, this.m_currentPoint.x);
+				m_currentPoint.add(this.basePositions.get(v) / 2 + 50, 0);
+				buildTree(v, (int)this.m_currentPoint.x);
 				progress++;
 				if (cancelled)
 					return;
@@ -145,8 +128,9 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 			allreadyDone.add(v);
 
 			// go one level further down
-			this.m_currentPoint.y += this.distY;
-			this.m_currentPoint.x = x;
+//			this.m_currentPoint.y += this.distY;
+//			this.m_currentPoint.x = x;
+			this.m_currentPoint.add(x, this.distY);
 
 			this.setCurrentPositionFor(v);
 
@@ -160,9 +144,9 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(v);
+				children = Graphs.predecessorListOf(graph, v);
 			else
-				children = graph.getSuccessors(v);
+				children = Graphs.successorListOf(graph, v);
 
 			// get new x position from children
 			for (ONDEXConcept element : children) {
@@ -176,7 +160,8 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 
 			// simply align them in y dimension, this is edge direction
 			// dependent, otherwise it gets upside down
-			this.m_currentPoint.y -= this.distY;
+//			this.m_currentPoint.y -= this.distY;
+			this.m_currentPoint.add(0, -this.distY);
 		}
 	}
 
@@ -195,9 +180,9 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(v);
+				children = Graphs.predecessorListOf(graph, v);
 			else
-				children = graph.getSuccessors(v);
+				children = Graphs.successorListOf(graph, v);
 
 			// check dimension for children
 			int childrenNum = children.size();
@@ -237,9 +222,9 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 			if (!seen.contains(current)) {
 				// check selection of edge direction
 				if (reversed)
-					stack.addAll(graph.getPredecessors(current));
+					stack.addAll(Graphs.predecessorListOf(graph, current));
 				else
-					stack.addAll(graph.getSuccessors(current));
+					stack.addAll(Graphs.successorListOf(graph, current));
 				// check dimension for children
 				size = distX;
 				size = Math.max(0, size - distX);
@@ -277,17 +262,17 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 		// check selection of edge direction
 		Collection<ONDEXConcept> parents = null;
 		if (reversed)
-			parents = graph.getPredecessors(p);
+			parents = Graphs.predecessorListOf(graph, p);
 		else
-			parents = graph.getSuccessors(p);
+			parents = Graphs.successorListOf(graph, p);
 		for (ONDEXConcept c : parents) {
 
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(c);
+				children = Graphs.predecessorListOf(graph, c);
 			else
-				children = graph.getSuccessors(c);
+				children = Graphs.successorListOf(graph, c);
 
 			if (children.size() == 0) {
 				v.add(c);
@@ -310,17 +295,17 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 		// check selection of edge direction
 		Collection<ONDEXConcept> parents = null;
 		if (reversed)
-			parents = graph.getPredecessors(v);
+			parents = Graphs.predecessorListOf(graph, v);
 		else
-			parents = graph.getSuccessors(v);
+			parents = Graphs.successorListOf(graph, v);
 		for (ONDEXConcept c : parents) {
 
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(c);
+				children = Graphs.predecessorListOf(graph, c);
 			else
-				children = graph.getSuccessors(c);
+				children = Graphs.successorListOf(graph, c);
 
 			// base: at leaf node, no more children
 			if (children.size() == 0) {
@@ -342,9 +327,9 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 	private Point2D getMaxXY() {
 		double maxx = 0;
 		double maxy = 0;
-		for (Point2D p : locations.values()) {
-			maxx = Math.max(maxx, p.getX());
-			maxy = Math.max(maxy, p.getY());
+		for (Point p : locations.values()) {
+			maxx = Math.max(maxx, p.x);
+			maxy = Math.max(maxy, p.y);
 		}
 		return new Point2D.Double(maxx, maxy);
 	}
@@ -437,19 +422,19 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 	/**
 	 * Returns list of nodes that are roots of trees in the graph.
 	 * 
-	 * @param graph
+	 * @param g
 	 *            ONDEXJUNGGraph
 	 * @return list of root nodes
 	 */
 	private Collection<ONDEXConcept> getRoots(
 			Graph<ONDEXConcept, ONDEXRelation> g) {
 		Set<ONDEXConcept> roots = new HashSet<ONDEXConcept>();
-		for (ONDEXConcept n : g.getVertices()) {
+		for (ONDEXConcept n : g.vertexSet()) {
 			// check selection of edge direction
-			if (reversed && g.getSuccessorCount(n) == 0) {
+			if (reversed && g.outDegreeOf(n) == 0) {
 				roots.add(n);
 			}
-			if (!reversed && g.getPredecessorCount(n) == 0) {
+			if (!reversed && g.inDegreeOf(n) == 0) {
 				roots.add(n);
 			}
 		}
@@ -459,13 +444,13 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 	/**
 	 * This layout is none incremental.
 	 * 
-	 * @see edu.uci.ics.jung.visualization.Layout#incrementsAreDone()
+	 *
 	 */
 	public boolean incrementsAreDone() {
 		return true;
 	}
 
-	@Override
+//	@Override
 	public void initialize() {
 
 		cancelled = false;
@@ -492,7 +477,7 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 		state = Monitorable.STATE_TERMINAL;
 	}
 
-	@Override
+//	@Override
 	public void reset() {
 		initialize();
 	}
@@ -504,17 +489,18 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 	 *            node to set position for
 	 */
 	private void setCurrentPositionFor(ONDEXConcept vertex) {
-		locations.get(vertex).setLocation(m_currentPoint);
+		locations.put(vertex, m_currentPoint);
 	}
 
-	@Override
+//	@Override
 	public void setLocation(ONDEXConcept v, Point2D location) {
 		Point2D c = getMaxXY();
 		c.setLocation(c.getX() / 2, c.getY() / 2);
-		Point2D pv = new Point2D.Double(location.getX() - c.getX(),
+		Point pv = Point.of(location.getX() - c.getX(),
 				location.getY() - c.getY());
 		PolarPoint newLocation = PolarPoint.cartesianToPolar(pv);
-		polarLocations.get(v).setLocation(newLocation);
+//		polarLocations.get(v).setLocation(newLocation);
+		polarLocations.put(v, newLocation);
 	}
 
 	/**
@@ -530,11 +516,11 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 		double theta = 2 * Math.PI / maxx;
 
 		double deltaRadius = maxy / 2;
-		for (Map.Entry<ONDEXConcept, Point2D> entry : locations.entrySet()) {
+		for (Map.Entry<ONDEXConcept, Point> entry : locations.entrySet()) {
 			ONDEXConcept v = entry.getKey();
-			Point2D p = entry.getValue();
-			PolarPoint polarPoint = new PolarPoint(p.getX() * theta,
-					(p.getY() - 50) * deltaRadius);
+			Point p = entry.getValue();
+			PolarPoint polarPoint = PolarPoint.of(p.x * theta,
+					(p.y - 50) * deltaRadius);
 			polarLocations.put(v, polarPoint);
 			if (cancelled)
 				return;
@@ -543,14 +529,16 @@ public class RadialTreeLayout extends OVTK2Layouter implements Monitorable {
 		progress++;
 	}
 
-	@Override
-	public Point2D transform(ONDEXConcept v) {
+//	@Override
+	public Point apply(ONDEXConcept v) {
 		PolarPoint pp = polarLocations.get(v);
 		Point2D c = getMaxXY();
 		c.setLocation(c.getX() / 2, c.getY() / 2);
-		Point2D cartesian = PolarPoint.polarToCartesian(pp);
-		cartesian.setLocation(cartesian.getX() + c.getX(),
-				cartesian.getY() + c.getY());
+		Point cartesian = PolarPoint.polarToCartesian(pp);
+		cartesian = cartesian.add(cartesian.x + c.getX(),
+				cartesian.y + c.getY());
+//		cartesian.setLocation(cartesian.getX() + c.getX(),
+//				cartesian.getY() + c.getY());
 		return cartesian;
 	}
 

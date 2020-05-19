@@ -213,7 +213,7 @@ public class DialogEdges extends OVTK2Dialog {
 			this.anELV = graph.getMetaData().getAttributeName("visibleELV");
 		}
 
-		Set<ONDEXRelation> pickedEdges = viewer.getPickedEdges();
+		Set<ONDEXRelation> pickedEdges = viewer.getSelectedEdges();
 
 		// get edge visibility
 		labels = new HashMap<ONDEXRelation, String>();
@@ -345,9 +345,7 @@ public class DialogEdges extends OVTK2Dialog {
 				graph.setVisibility(relation, visible.get(relation));
 			}
 
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
-
-			edit.end();
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();edit.end();
 			viewer.getUndoManager().addEdit(edit);
 			OVTK2Desktop.getInstance().getOVTK2Menu().updateUndoRedo(viewer);
 		}

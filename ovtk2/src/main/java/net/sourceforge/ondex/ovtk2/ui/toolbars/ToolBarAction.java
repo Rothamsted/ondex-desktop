@@ -13,9 +13,6 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXGraph;
 import net.sourceforge.ondex.core.ONDEXRelation;
@@ -29,6 +26,9 @@ import net.sourceforge.ondex.ovtk2.ui.dialog.DialogRelation;
 import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2GraphMouse;
 import net.sourceforge.ondex.ovtk2.util.DesktopUtils;
 import net.sourceforge.ondex.ovtk2.util.VisualisationUtils;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.control.ModalGraphMouse;
+import org.jungrapht.visualization.control.ModalGraphMouse.Mode;
 
 /**
  * Handles tool-bar related action events.
@@ -64,12 +64,12 @@ public class ToolBarAction implements ActionListener {
 		// edit select node or edge
 		else if (cmd.equals("edit")) {
 			if (viewer != null) {
-				if (viewer.getPickedNodes().size() == 1 && viewer.getPickedEdges().size() == 0) {
-					ONDEXConcept node = viewer.getPickedNodes().iterator().next();
+				if (viewer.getSelectedNodes().size() == 1 && viewer.getSelectedEdges().size() == 0) {
+					ONDEXConcept node = viewer.getSelectedNodes().iterator().next();
 					DialogConcept dialog = new DialogConcept(viewer, node);
 					desktop.display(dialog, Position.centered);
-				} else if (viewer.getPickedNodes().size() == 0 && viewer.getPickedEdges().size() == 1) {
-					ONDEXRelation edge = viewer.getPickedEdges().iterator().next();
+				} else if (viewer.getSelectedNodes().size() == 0 && viewer.getSelectedEdges().size() == 1) {
+					ONDEXRelation edge = viewer.getSelectedEdges().iterator().next();
 					DialogRelation dialog = new DialogRelation(viewer, edge);
 					desktop.display(dialog, Position.centered);
 				}
@@ -85,17 +85,17 @@ public class ToolBarAction implements ActionListener {
 				if (answer == JOptionPane.YES_OPTION) {
 
 					// first remove relations
-					for (ONDEXRelation r : viewer.getPickedEdges()) {
+					for (ONDEXRelation r : viewer.getSelectedEdges()) {
 						viewer.getONDEXJUNGGraph().deleteRelation(r.getId());
 					}
 
 					// then delete concepts
-					for (ONDEXConcept c : viewer.getPickedNodes()) {
+					for (ONDEXConcept c : viewer.getSelectedNodes()) {
 						viewer.getONDEXJUNGGraph().deleteConcept(c.getId());
 					}
 
 					// notify model of change
-					viewer.getVisualizationViewer().getModel().fireStateChanged();
+					viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 					((ActionListener) viewer).actionPerformed(new ActionEvent(this, 0, REFRESH));
 
 					viewer.getMetaGraph().updateMetaData();
@@ -135,11 +135,11 @@ public class ToolBarAction implements ActionListener {
 					it = edge_visibility.keySet().iterator();
 					while (it.hasNext()) {
 						int internal = it.next();
-						viewer.getONDEXJUNGGraph().getEdges_visibility().put(internal, edge_visibility.get(internal));
+						viewer.getONDEXJUNGGraph().getEdges_visibility().put(internal, edge_visibility.getOrDefault(internal, false));
 					}
 
 					// synchronise layout
-					viewer.getVisualizationViewer().setGraphLayout(current.getVisualizationViewer().getGraphLayout());
+					viewer.getVisualizationViewer().getVisualizationModel().setLayoutAlgorithm(current.getVisualizationViewer().getVisualizationModel().getLayoutAlgorithm());
 				} else {
 					// initialise new OVTK2Viewer only
 					resources.setSelectedViewer(DesktopUtils.initViewer(old));
@@ -172,7 +172,7 @@ public class ToolBarAction implements ActionListener {
 				VisualizationViewer<ONDEXConcept, ONDEXRelation> vv = viewer.getVisualizationViewer();
 
 				// check for node selection
-				Set<ONDEXConcept> picked = viewer.getPickedNodes();
+				Set<ONDEXConcept> picked = viewer.getSelectedNodes();
 				if (picked.size() > 0) {
 					VisualisationUtils.zoomIn(viewer);
 				} else {

@@ -1,12 +1,12 @@
 package net.sourceforge.ondex.ovtk2.util;
 
+import org.jgrapht.Graph;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import edu.uci.ics.jung.graph.Graph;
 
 /**
  * This class implements Bron-Kerbosch clique detection algorithm as it is
@@ -53,7 +53,7 @@ public class BronKerboschCliqueFinder<V, E> {
 		List<V> potential_clique = new ArrayList<V>();
 		List<V> candidates = new ArrayList<V>();
 		List<V> already_found = new ArrayList<V>();
-		candidates.addAll(graph.getVertices());
+		candidates.addAll(graph.vertexSet());
 		findCliques(potential_clique, candidates, already_found);
 		return cliques;
 	}
@@ -98,7 +98,7 @@ public class BronKerboschCliqueFinder<V, E> {
 				// create new_candidates by removing nodes in candidates not
 				// connected to candidate node
 				for (V new_candidate : candidates) {
-					if (graph.isNeighbor(candidate, new_candidate)) {
+					if (graph.containsEdge(candidate, new_candidate)) {
 						new_candidates.add(new_candidate);
 					} // of if
 				} // of for
@@ -106,7 +106,7 @@ public class BronKerboschCliqueFinder<V, E> {
 				// create new_already_found by removing nodes in already_found
 				// not connected to candidate node
 				for (V new_found : already_found) {
-					if (graph.isNeighbor(candidate, new_found)) {
+					if (graph.containsEdge(candidate, new_found)) {
 						new_already_found.add(new_found);
 					} // of if
 				} // of for
@@ -135,7 +135,7 @@ public class BronKerboschCliqueFinder<V, E> {
 		for (V found : already_found) {
 			edgecounter = 0;
 			for (V candidate : candidates) {
-				if (graph.isNeighbor(found, candidate)) {
+				if (graph.containsEdge(found, candidate)) {
 					edgecounter++;
 				} // of if
 			} // of for

@@ -1,31 +1,5 @@
 package net.sourceforge.ondex.ovtk2.layout;
 
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.geom.Point2D;
-import java.util.ConcurrentModificationException;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.apache.commons.collections15.Transformer;
-
-import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
-import edu.uci.ics.jung.algorithms.shortestpath.DijkstraDistance;
-import edu.uci.ics.jung.algorithms.shortestpath.Distance;
-import edu.uci.ics.jung.algorithms.shortestpath.UnweightedShortestPath;
-import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ONDEXConcept;
@@ -35,6 +9,26 @@ import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.ovtk2.util.AppearanceSynchronizer;
 import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.jgrapht.Graph;
+import org.jgrapht.GraphPath;
+import org.jgrapht.alg.interfaces.ShortestPathAlgorithm;
+import org.jgrapht.alg.shortestpath.DijkstraShortestPath;
+import org.jungrapht.visualization.layout.algorithms.util.IterativeContext;
+import org.jungrapht.visualization.layout.algorithms.util.Pair;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Layout based on the KKLayout from JUNG taking Attribute values into account
@@ -92,15 +86,15 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 
 	private ONDEXConcept[] vertices;
 
-	private Point2D[] xydata;
+	private Point[] xydata;
 
 	private boolean cancelled = false;
 
 	// Retrieves graph distances between vertices of the visible graph
-	protected Distance<ONDEXConcept> distance;
+	protected Map<Pair<ONDEXConcept>, Integer> distance;
 
 	public String getStatus() {
-		return status + this.getSize();
+		return status + this.layoutModel.getWidth();
 	}
 
 	/**
@@ -125,17 +119,17 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 
 		if (graph != null) {
 
-			int n = graph.getVertexCount();
+			int n = graph.vertexSet().size();
 			dm = new double[n][n];
-			vertices = graph.getVertices().toArray(new ONDEXConcept[0]);
-			xydata = new Point2D[n];
+			vertices = graph.vertexSet().toArray(new ONDEXConcept[0]);
+			xydata = new Point[n];
 
 			// assign IDs to all visible vertices
 			while (true) {
 				try {
 					int index = 0;
-					for (ONDEXConcept v : graph.getVertices()) {
-						Point2D xyd = transform(v);
+					for (ONDEXConcept v : graph.vertexSet()) {
+						Point xyd = layoutModel.apply(v);
 						vertices[index] = v;
 						xydata[index] = xyd;
 						index++;
@@ -148,9 +142,9 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 			for (int i = 0; i < n - 1; i++) {
 				for (int j = i + 1; j < n; j++) {
 					Number d_ij = distance
-							.getDistance(vertices[i], vertices[j]);
+							.get(Pair.of(vertices[i], vertices[j]));
 					Number d_ji = distance
-							.getDistance(vertices[j], vertices[i]);
+							.get(Pair.of(vertices[j], vertices[i]));
 					double dist = disconnected_length;
 					if (d_ij != null)
 						dist = Math.min(d_ij.doubleValue(), dist);
@@ -169,18 +163,18 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 				return;
 
 			double energy = calcEnergy();
-			status = "Kamada-Kawai V=" + getGraph().getVertexCount() + "("
-					+ getGraph().getVertexCount() + ")" + " IT: "
+			status = "Kamada-Kawai V=" + graph.vertexSet().size() + "("
+					+ graph.vertexSet().size() + ")" + " IT: "
 					+ currentIteration + " E=" + energy;
 
-			int n = getGraph().getVertexCount();
+			int n = graph.vertexSet().size();
 			if (n == 0)
 				return;
 
 			double maxDeltaM = 0;
 			int pm = -1; // the node having max deltaM
 			for (int i = 0; i < n; i++) {
-				if (isLocked(vertices[i]))
+				if (layoutModel.isLocked(vertices[i]))
 					continue;
 				double deltam = calcDeltaM(i);
 
@@ -194,9 +188,7 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 
 			for (int i = 0; i < 100; i++) {
 				double[] dxy = calcDeltaXY(pm);
-				xydata[pm].setLocation(xydata[pm].getX() + dxy[0],
-						xydata[pm].getY() + dxy[1]);
-
+				xydata[pm] = Point.of(xydata[pm].x + dxy[0], xydata[pm].y + dxy[1]);
 				double deltam = calcDeltaM(pm);
 				if (deltam < EPSILON)
 					break;
@@ -205,17 +197,19 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 			if (exchangeVertices && maxDeltaM < EPSILON) {
 				energy = calcEnergy();
 				for (int i = 0; i < n - 1; i++) {
-					if (isLocked(vertices[i]))
+					if (layoutModel.isLocked(vertices[i])) {
 						continue;
+					}
 					for (int j = i + 1; j < n; j++) {
-						if (isLocked(vertices[j]))
+						if (layoutModel.isLocked(vertices[j])) {
 							continue;
+						}
 						double xenergy = calcEnergyIfExchanged(i, j);
 						if (energy > xenergy) {
-							double sx = xydata[i].getX();
-							double sy = xydata[i].getY();
-							xydata[i].setLocation(xydata[j]);
-							xydata[j].setLocation(sx, sy);
+							double sx = xydata[i].x;
+							double sy = xydata[i].y;
+							xydata[i] = Point.of(xydata[j].x, xydata[j].y);
+							xydata[j] = Point.of(sx, sy);
 							return;
 						}
 					}
@@ -234,11 +228,14 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 	 * .Dimension)
 	 */
 
-	@Override
-	public void setSize(Dimension size) {
-		setInitializer(new RandomLocationTransformer<ONDEXConcept>(size));
-		super.setSize(size);
-	}
+//	@Override
+//	public void setSize(Dimension size) {
+//		layoutModel.setSize(size.width, size.height);
+//		layoutModel.setInitializer(
+//		new RandomLocationTransformer<>(
+//				layoutModel.getWidth(), layoutModel.getHeight(), graph.vertexSet().size()));
+//		super.setSize(size);
+//	}
 
 	/**
 	 * Enable or disable the local minimum escape technique by exchanging
@@ -273,8 +270,8 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 				double dist = dm[m][i];
 				double l_mi = edge_length * dist;
 				double k_mi = K / (dist * dist);
-				double dx = xydata[m].getX() - xydata[i].getX();
-				double dy = xydata[m].getY() - xydata[i].getY();
+				double dx = xydata[m].x - xydata[i].x;
+				double dy = xydata[m].y - xydata[i].y;
 				double d = Math.sqrt(dx * dx + dy * dy);
 				double ddd = d * d * d;
 
@@ -306,8 +303,8 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 				double l_mi = edge_length * dist;
 				double k_mi = K / (dist * dist);
 
-				double dx = xydata[m].getX() - xydata[i].getX();
-				double dy = xydata[m].getY() - xydata[i].getY();
+				double dx = xydata[m].x - xydata[i].x;
+				double dy = xydata[m].y - xydata[i].y;
 				double d = Math.sqrt(dx * dx + dy * dy);
 
 				double common = k_mi * (1 - l_mi / d);
@@ -328,8 +325,8 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 				double dist = dm[i][j];
 				double l_ij = edge_length * dist;
 				double k_ij = K / (dist * dist);
-				double dx = xydata[i].getX() - xydata[j].getX();
-				double dy = xydata[i].getY() - xydata[j].getY();
+				double dx = xydata[i].x - xydata[j].x;
+				double dy = xydata[i].y - xydata[j].y;
 				double d = Math.sqrt(dx * dx + dy * dy);
 
 				energy += k_ij / 2
@@ -359,8 +356,8 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 				double dist = dm[i][j];
 				double l_ij = edge_length * dist;
 				double k_ij = K / (dist * dist);
-				double dx = xydata[ii].getX() - xydata[jj].getX();
-				double dy = xydata[ii].getY() - xydata[jj].getY();
+				double dx = xydata[ii].x - xydata[jj].x;
+				double dy = xydata[ii].y - xydata[jj].y;
 				double d = Math.sqrt(dx * dx + dy * dy);
 
 				energy += k_ij / 2
@@ -384,8 +381,32 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 	 */
 	public AttributeKKLayout(OVTK2PropertiesAggregator viewer) {
 		super(viewer);
-		this.distance = new UnweightedShortestPath<ONDEXConcept, ONDEXRelation>(
-				graph);
+	}
+
+	@Override
+	public void visit(LayoutModel<ONDEXConcept> layoutModel) {
+		super.visit(layoutModel);
+		if (graph != null) {
+			this.distance = getDistances(graph);
+		}
+		initialize();
+	}
+
+	private Map<Pair<ONDEXConcept>, Integer> getDistances(Graph<ONDEXConcept, ?> graph) {
+
+		DijkstraShortestPath<ONDEXConcept, ?> dijkstra = new DijkstraShortestPath<>(graph);
+		Map<Pair<ONDEXConcept>, Integer> distanceMap = new HashMap<>();
+		for (ONDEXConcept vertex : graph.vertexSet()) {
+
+			ShortestPathAlgorithm.SingleSourcePaths<ONDEXConcept, ?> distances = dijkstra.getPaths(vertex);
+			for (ONDEXConcept n : graph.vertexSet()) {
+				GraphPath<ONDEXConcept, ?> graphPath = distances.getPath(n);
+				if (graphPath != null && graphPath.getWeight() != 0) {
+					distanceMap.put(Pair.of(vertex, n), (int) graphPath.getWeight());
+				}
+			}
+		}
+		return distanceMap;
 	}
 
 	@Override
@@ -477,15 +498,17 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 		JComboBox box = (JComboBox) arg0.getSource();
 		String name = (String) box.getSelectedItem();
 		an = aog.getMetaData().getAttributeName(name);
-		if (an == null) {
-			this.distance = new UnweightedShortestPath<ONDEXConcept, ONDEXRelation>(
-					graph);
-			this.reset();
-		} else {
-			this.distance = new DijkstraDistance<ONDEXConcept, ONDEXRelation>(
-					graph, new GDSEdges(an, inverseScale), true);
-			this.reset();
-		}
+		this.distance = getDistances(graph);
+		this.reset();
+//		if (an == null) {
+//			this.distance = new UnweightedShortestPath<ONDEXConcept, ONDEXRelation>(
+//					graph);
+//			this.reset();
+//		} else {
+//			this.distance = new DijkstraDistance<ONDEXConcept, ONDEXRelation>(
+//					graph, new GDSEdges(an, inverseScale), true);
+//			this.reset();
+//		}
 	}
 
 	/**
@@ -494,7 +517,7 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 	 * @author taubertj
 	 * @version 12.03.2008
 	 */
-	private class GDSEdges implements Transformer<ONDEXRelation, Number> {
+	private class GDSEdges implements Function<ONDEXRelation, Number> {
 
 		// cache for edge weights
 		Map<ONDEXRelation, Number> cache;
@@ -567,7 +590,7 @@ public class AttributeKKLayout extends OVTK2Layouter implements ActionListener,
 		 *            ONDEXEdge
 		 * @return Number
 		 */
-		public Number transform(ONDEXRelation input) {
+		public Number apply(ONDEXRelation input) {
 			Number number = cache.get(input);
 			if (number == null)
 				return 1;
