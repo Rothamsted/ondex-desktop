@@ -24,8 +24,6 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
-import org.apache.commons.collections15.Transformer;
-
 import jxl.Workbook;
 import jxl.write.Label;
 import jxl.write.Number;
@@ -182,8 +180,7 @@ public class IEEEFunctions {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-				// viewer.validate();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();// viewer.validate();
 			}
 		});
 	}
@@ -191,13 +188,8 @@ public class IEEEFunctions {
 	public static void setRelationWidth(OVTK2PropertiesAggregator viewer, final int size) {
 		try {
 			ONDEXEdgeStrokes edgeStrokes = viewer.getEdgeStrokes();
-			edgeStrokes.setEdgeSizes(new Transformer<ONDEXRelation, Integer>() {
-				@Override
-				public Integer transform(ONDEXRelation input) {
-					return size;
-				}
-			});
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
+			edgeStrokes.setEdgeSizes(e -> size);
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			viewer.updateViewer(null);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -207,14 +199,8 @@ public class IEEEFunctions {
 	public static void setConceptSize(OVTK2PropertiesAggregator viewer, final int size) {
 		try {
 			ONDEXNodeShapes nodeShapes = viewer.getNodeShapes();
-			nodeShapes.setNodeSizes(new Transformer<ONDEXConcept, Integer>() {
-				@Override
-				public Integer transform(ONDEXConcept input) {
-					return size;
-				}
-			});
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
-			viewer.updateViewer(null);
+			nodeShapes.setNodeSizes(e -> size);
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();viewer.updateViewer(null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

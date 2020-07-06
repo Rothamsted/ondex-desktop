@@ -23,7 +23,6 @@ import javax.swing.LayoutStyle;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.InternalFrameEvent;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.core.DataSource;
 import net.sourceforge.ondex.core.EvidenceType;
@@ -37,6 +36,8 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
 import net.sourceforge.ondex.ovtk2.util.DesktopUtils.CaseInsensitiveMetaDataComparator;
 import net.sourceforge.ondex.ovtk2.util.OVTKProgressMonitor;
 import net.sourceforge.ondex.tools.threading.monitoring.IndeterminateProcessAdapter;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Concept properties dialog.
@@ -106,7 +107,7 @@ public class DialogConcept extends OVTK2Dialog {
 	/**
 	 * Constructs user input dialog to add or modify a Concept to a given graph.
 	 * 
-	 * @param aog
+	 * @param viewer
 	 *            AbstractONDEXGraph to add to
 	 * @param ac
 	 *            optional ONDEXConcept
@@ -233,7 +234,7 @@ public class DialogConcept extends OVTK2Dialog {
 		tags.removeAllItems();
 		tags.addItem("");
 		tags.addItem(Config.language.getProperty("Dialog.Concept.PickNew"));
-		for (ONDEXConcept c : viewer.getPickedNodes()) {
+		for (ONDEXConcept c : viewer.getSelectedNodes()) {
 			tags.addItem(String.valueOf(c.getId()));
 		}
 		tags.setSelectedIndex(0);
@@ -479,7 +480,7 @@ public class DialogConcept extends OVTK2Dialog {
 				// centre new node
 				int width = viz.getWidth() / 2;
 				int height = viz.getHeight() / 2;
-				viz.getGraphLayout().setLocation(concept, new Point2D.Float(width, height));
+				viz.getVisualizationModel().getLayoutModel().set(concept, Point.of(width, height));
 
 				// update shape and label of node
 				viewer.updateViewer(concept);

@@ -19,13 +19,14 @@ import javax.swing.event.ChangeListener;
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.map.LazyMap;
 
-import edu.uci.ics.jung.algorithms.layout.util.RandomLocationTransformer;
-import edu.uci.ics.jung.algorithms.util.IterativeContext;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.core.RelationType;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import org.jungrapht.visualization.layout.algorithms.util.IterativeContext;
+import org.jungrapht.visualization.layout.model.Point;
+import org.jungrapht.visualization.layout.util.RandomLocationTransformer;
 
 /**
  * Spring Layouter uses different edge length for relation types.
@@ -163,10 +164,10 @@ public class SpringRelationTypeLayout extends OVTK2Layouter implements
 	public void initialize() {
 		if (graph != null) {
 			// get vertices and edges from graph
-			vertices = graph.getVertices().toArray(new ONDEXConcept[0]);
-			edges = graph.getEdges().toArray(new ONDEXRelation[0]);
+			vertices = graph.vertexSet().toArray(new ONDEXConcept[0]);
+			edges = graph.edgeSet().toArray(new ONDEXRelation[0]);
 		}
-		Dimension dim = getSize();
+		Dimension dim = new Dimension(layoutModel.getWidth(), layoutModel.getHeight());
 		if (graph != null && dim != null && iterations == 0) {
 
 			// clear length and forces
@@ -177,12 +178,12 @@ public class SpringRelationTypeLayout extends OVTK2Layouter implements
 			iterations = 0;
 
 			// randomize position, but deterministic behaviour
-			setInitializer(new RandomLocationTransformer<ONDEXConcept>(dim, 1));
+			layoutModel.setInitializer(new RandomLocationTransformer<ONDEXConcept>(dim.width, dim.height, 1));
 
 			// initialize rt scores
 			for (ONDEXRelation e : edges) {
-				ConceptClass sourceCC = graph.getSource(e).getOfType();
-				ConceptClass destCC = graph.getDest(e).getOfType();
+				ConceptClass sourceCC = graph.getEdgeSource(e).getOfType();
+				ConceptClass destCC = graph.getEdgeTarget(e).getOfType();
 				RelationType rt = e.getOfType();
 				if (!scores.containsKey(sourceCC))
 					scores.put(
@@ -227,8 +228,8 @@ public class SpringRelationTypeLayout extends OVTK2Layouter implements
 
 			// initialise edge length
 			for (ONDEXRelation e : edges) {
-				ONDEXConcept source = graph.getSource(e);
-				ONDEXConcept dest = graph.getDest(e);
+				ONDEXConcept source = graph.getEdgeSource(e);
+				ONDEXConcept dest = graph.getEdgeTarget(e);
 				if (!length.containsKey(source))
 					length.put(source, new HashMap<ONDEXConcept, Double>());
 				if (!length.containsKey(dest))
@@ -288,8 +289,9 @@ public class SpringRelationTypeLayout extends OVTK2Layouter implements
 				for (ONDEXConcept u : vertices) {
 					for (ONDEXConcept v : vertices) {
 						// get current coordinates
-						double dx = getX(v) - getX(u);
-						double dy = getY(v) - getY(u);
+//						Map<ONDEXConcept, Point> locations = layoutModel.getLocations();
+						double dx = layoutModel.get(v).x - layoutModel.get(u).x;
+						double dy = layoutModel.get(v).y - layoutModel.get(u).y;
 
 						// calculate euclidian distance approx.
 						double absdx = Math.abs(dx);
@@ -334,8 +336,8 @@ public class SpringRelationTypeLayout extends OVTK2Layouter implements
 						for (ONDEXConcept v : vertices) {
 
 							// get current coordinates
-							double dx = getX(v) - getX(u);
-							double dy = getY(v) - getY(u);
+							double dx = layoutModel.get(v).x - layoutModel.get(u).x;
+							double dy = layoutModel.get(v).y - layoutModel.get(u).y;
 
 							// calculate euclidian distance approx.
 							double absdx = Math.abs(dx);
@@ -402,9 +404,11 @@ public class SpringRelationTypeLayout extends OVTK2Layouter implements
 						if (ymove < -1 * max)
 							ymove = -1 * max;
 
-						Point2D coord = transform(vertex);
-						coord.setLocation(coord.getX() + xmove, coord.getY()
-								+ ymove);
+						Point coord = layoutModel.apply(vertex);
+						coord = coord.add(xmove, ymove);
+//						Point coord = Point.of(coord.getX() + xmove, coord.getY()
+//								+ ymove);
+						layoutModel.set(vertex, coord);
 						forces_x.put(vertex, 0.0);
 						forces_y.put(vertex, 0.0);
 					}

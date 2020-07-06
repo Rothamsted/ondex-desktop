@@ -185,9 +185,7 @@ public class Collapser extends OVTK2Filter implements ActionListener, MouseListe
             }
             
             // propagate change to viewer
-            viewer.getVisualizationViewer().getModel().fireStateChanged();
-            
-            edit.end();
+            viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();edit.end();
             viewer.undoManager.addEdit(edit);
             desktop.getOVTK2Menu().updateUndoRedo(viewer);
             desktop.notifyTerminationOfProcess();
@@ -205,7 +203,7 @@ public class Collapser extends OVTK2Filter implements ActionListener, MouseListe
             AttributeName anPath = graph.getMetaData().getAttributeName("collapsedPath");
             
             //look through selected edges
-            for(ONDEXRelation r : viewer.getPickedEdges())
+            for(ONDEXRelation r : viewer.getSelectedEdges())
             {
                 
                 if(r.getAttribute(anPath)!=null)
@@ -227,8 +225,7 @@ public class Collapser extends OVTK2Filter implements ActionListener, MouseListe
             }
             
             // propagate change to viewer
-            viewer.getVisualizationViewer().getModel().fireStateChanged();
-            edit.end();
+            viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();edit.end();
             viewer.undoManager.addEdit(edit);
             desktop.getOVTK2Menu().updateUndoRedo(viewer);
             desktop.notifyTerminationOfProcess();
@@ -245,11 +242,11 @@ public class Collapser extends OVTK2Filter implements ActionListener, MouseListe
          * if one of the collapsed edges, then it enables the expand button
          * it anything else(or nothing at all) it disables the button
          */
-        if (viewer.getPickedEdges() != null) {
+        if (viewer.getSelectedEdges() != null) {
 
                     boolean valid = false;
                     AttributeName anPath = graph.getMetaData().getAttributeName("collapsedPath");
-                    for (ONDEXRelation r : viewer.getPickedEdges()) {
+                    for (ONDEXRelation r : viewer.getSelectedEdges()) {
                         if (r.getAttribute(anPath) != null) {
                             valid = true;
                         }

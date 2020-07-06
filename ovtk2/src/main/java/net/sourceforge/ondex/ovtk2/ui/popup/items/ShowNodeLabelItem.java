@@ -15,7 +15,7 @@ public class ShowNodeLabelItem extends EntityMenuItem<ONDEXConcept> {
 	@Override
 	public boolean accepts() {
 		for (ONDEXConcept node : entities) {
-			if (viewer.getNodeLabels().transform(node).length() == 0)
+			if (viewer.getNodeLabels().apply(node).length() == 0)
 				return true;
 		}
 		return false;

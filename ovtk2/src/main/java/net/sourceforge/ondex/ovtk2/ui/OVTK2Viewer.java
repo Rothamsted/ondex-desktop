@@ -1,5 +1,45 @@
 package net.sourceforge.ondex.ovtk2.ui;
 
+import net.sourceforge.ondex.core.ONDEXConcept;
+import net.sourceforge.ondex.core.ONDEXEntity;
+import net.sourceforge.ondex.core.ONDEXGraph;
+import net.sourceforge.ondex.core.ONDEXRelation;
+import net.sourceforge.ondex.ovtk2.config.Config;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeArrows;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeColors;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeLabels;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeShapes;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeStrokes;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeDrawPaint;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeFillPaint;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeLabels;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeShapes;
+import net.sourceforge.ondex.ovtk2.graph.VisibilityUndo;
+import net.sourceforge.ondex.ovtk2.graph.custom.ONDEXBasicVertexRenderer;
+import net.sourceforge.ondex.ovtk2.layout.ConceptClassCircleLayout;
+import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaConcept;
+import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaGraph;
+import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaGraphPanel;
+import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaRelation;
+import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2AnnotatingGraphMousePlugin;
+import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2DefaultModalGraphMouse;
+import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2GraphMouse;
+import net.sourceforge.ondex.ovtk2.util.DesktopUtils;
+import net.sourceforge.ondex.ovtk2.util.ErrorDialog;
+import net.sourceforge.ondex.ovtk2.util.RegisteredFrame;
+import net.sourceforge.ondex.ovtk2.util.VisualisationUtils;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.annotations.AnnotatingModalGraphMouse;
+import org.jungrapht.visualization.control.ModalGraphMouse;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
+import org.jungrapht.visualization.renderers.Renderer;
+import org.jungrapht.visualization.selection.MutableSelectedState;
+
+import javax.swing.*;
+import javax.swing.undo.StateEdit;
+import javax.swing.undo.UndoManager;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -30,50 +70,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Function;
 
-import javax.swing.ImageIcon;
-import javax.swing.JInternalFrame;
-import javax.swing.undo.StateEdit;
-import javax.swing.undo.UndoManager;
-
-import org.apache.commons.collections15.Transformer;
-
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.util.Relaxer;
-import edu.uci.ics.jung.visualization.Layer;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.annotations.AnnotatingModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
-import edu.uci.ics.jung.visualization.picking.PickedState;
-import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
-import net.sourceforge.ondex.core.ONDEXConcept;
-import net.sourceforge.ondex.core.ONDEXEntity;
-import net.sourceforge.ondex.core.ONDEXGraph;
-import net.sourceforge.ondex.core.ONDEXRelation;
-import net.sourceforge.ondex.ovtk2.config.Config;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeArrows;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeColors;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeLabels;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeShapes;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXEdgeStrokes;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeDrawPaint;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeFillPaint;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeLabels;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeShapes;
-import net.sourceforge.ondex.ovtk2.graph.VisibilityUndo;
-import net.sourceforge.ondex.ovtk2.graph.custom.ONDEXBasicVertexRenderer;
-import net.sourceforge.ondex.ovtk2.layout.ConceptClassCircleLayout;
-import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaGraph;
-import net.sourceforge.ondex.ovtk2.metagraph.ONDEXMetaGraphPanel;
-import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2AnnotatingGraphMousePlugin;
-import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2DefaultModalGraphMouse;
-import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2GraphMouse;
-import net.sourceforge.ondex.ovtk2.util.DesktopUtils;
-import net.sourceforge.ondex.ovtk2.util.ErrorDialog;
-import net.sourceforge.ondex.ovtk2.util.RegisteredFrame;
-import net.sourceforge.ondex.ovtk2.util.VisualisationUtils;
+import static org.jungrapht.visualization.MultiLayerTransformer.Layer;
+import static org.jungrapht.visualization.control.ModalGraphMouse.Mode;
 
 /**
  * Represents the graphical visualisation of an ONDEXGraph.
@@ -191,7 +191,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	// ONDEXNodeShapes
 	private ONDEXNodeShapes nodeshapes = null;
 
-	Transformer<ONDEXConcept, Stroke> oldStrokes = null;
+	Function<ONDEXConcept, Stroke> oldStrokes = null;
 
 	// whether to relayout on viewer resize
 	protected boolean relayoutOnResize = false;
@@ -247,16 +247,16 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 
 		// set default layouter
 		ConceptClassCircleLayout layout = new ConceptClassCircleLayout(this);
-		visviewer = new VisualizationViewer<ONDEXConcept, ONDEXRelation>(layout, new Dimension(640, 480));
-		visviewer.setGraphLayout(layout);
+		visviewer = VisualizationViewer.builder(graph).layoutAlgorithm(layout).viewSize(new Dimension(640, 480)).build();
+		visviewer.getVisualizationModel().setLayoutAlgorithm(layout);
 		visviewer.setBackground(Color.white);
-		visviewer.setDoubleBuffered(true);
+//		visviewer.setDoubleBuffered(true);
 
 		// apply layout also to invisible nodes
 		layout.initialize(true);
 
 		// default label position
-		visviewer.getRenderer().getVertexLabelRenderer().setPosition(Position.AUTO);
+		visviewer.getRenderContext().setVertexLabelPosition(Renderer.VertexLabel.Position.AUTO);
 
 		// set custom vertex renderer for shape transparency
 		visviewer.getRenderer().setVertexRenderer(new ONDEXBasicVertexRenderer(graph));
@@ -274,10 +274,10 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 		edgeshapes = new ONDEXEdgeShapes();
 
 		// initialize node colors
-		nodecolors = new ONDEXNodeFillPaint(visviewer.getPickedVertexState());
+		nodecolors = new ONDEXNodeFillPaint(visviewer.getSelectedVertexState());
 
 		// initialize edge colors
-		edgecolors = new ONDEXEdgeColors(visviewer.getPickedEdgeState());
+		edgecolors = new ONDEXEdgeColors(visviewer.getSelectedEdgeState());
 
 		// initialize node draw paint
 		nodeDrawPaint = new ONDEXNodeDrawPaint();
@@ -288,32 +288,32 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 		// initialize edge arrows
 		edgearrows = new ONDEXEdgeArrows();
 
-		// node label transformer
-		visviewer.getRenderContext().setVertexLabelTransformer(nodelabels);
-		visviewer.getRenderContext().setEdgeLabelTransformer(edgelabels);
+		// node label Function
+		visviewer.getRenderContext().setVertexLabelFunction(nodelabels);
+		visviewer.getRenderContext().setEdgeLabelFunction(edgelabels);
 
-		// node shape transformer
-		visviewer.getRenderContext().setVertexShapeTransformer(nodeshapes);
-		visviewer.getRenderContext().getVertexFontTransformer();
+		// node shape Function
+		visviewer.getRenderContext().setVertexShapeFunction(nodeshapes);
+		visviewer.getRenderContext().getVertexFontFunction();
 
-		// edge shape transformer
-		visviewer.getRenderContext().setEdgeShapeTransformer(edgeshapes);
+		// edge shape Function
+		visviewer.getRenderContext().setEdgeShapeFunction(edgeshapes);
 		edgeshapes.setEdgeIndexFunction(visviewer.getRenderContext().getParallelEdgeIndexFunction());
 
-		// edge color transformer
-		visviewer.getRenderContext().setEdgeDrawPaintTransformer(edgecolors);
+		// edge color Function
+		visviewer.getRenderContext().setEdgeDrawPaintFunction(edgecolors);
 
-		// node color transformer
-		visviewer.getRenderContext().setVertexFillPaintTransformer(nodecolors);
+		// node color Function
+		visviewer.getRenderContext().setVertexFillPaintFunction(nodecolors);
 
-		// node draw paint transformer
-		visviewer.getRenderContext().setVertexDrawPaintTransformer(nodeDrawPaint);
+		// node draw paint Function
+		visviewer.getRenderContext().setVertexDrawPaintFunction(nodeDrawPaint);
 
-		// edge stroke transformer
-		visviewer.getRenderContext().setEdgeStrokeTransformer(edgestrokes);
+		// edge stroke Function
+		visviewer.getRenderContext().setEdgeStrokeFunction(edgestrokes);
 
 		// edge arrow predicate
-		visviewer.getRenderContext().setEdgeArrowPredicate(edgearrows);
+//		visviewer.getRenderContext().setEdgeArrowPredicate(edgearrows);
 
 		// set antialiasing painting off
 		Map<RenderingHints.Key, Object> temp = visviewer.getRenderingHints();
@@ -322,8 +322,8 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 		for (RenderingHints.Key key : temp.keySet()) {
 			hints.put(key, temp.get(key));
 		}
-		hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-		visviewer.setRenderingHints(hints);
+//		hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+//		visviewer.setRenderingHints(hints);
 
 		// standard mouse support
 		OVTK2AnnotatingGraphMousePlugin anno = new OVTK2AnnotatingGraphMousePlugin(visviewer.getRenderContext());
@@ -338,7 +338,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 
 		this.addComponentListener(this);
 		this.getContentPane().setLayout(new BorderLayout());
-		this.getContentPane().add(visviewer, BorderLayout.CENTER);
+		this.getContentPane().add(visviewer.getComponent(), BorderLayout.CENTER);
 
 		this.pack();
 
@@ -393,36 +393,34 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	 * 
 	 * @return Point2D[]
 	 */
-	private Point2D[] calcBounds() {
-		Point2D min = null;
-		Point2D max = null;
-		Layout<ONDEXConcept, ONDEXRelation> layout = getVisualizationViewer().getGraphLayout();
+	private Point[] calcBounds() {
+		Point min = null;
+		Point max = null;
+		LayoutModel<ONDEXConcept> layout = getVisualizationViewer().getVisualizationModel().getLayoutModel();
 		for (ONDEXConcept ondexNode : getONDEXJUNGGraph().getVertices()) {
-			Point2D point = layout.transform(ondexNode);
+			Point point = layout.apply(ondexNode);
 			if (min == null) {
-				min = new Point2D.Double(0, 0);
-				min.setLocation(point);
+				min = point;
 			}
 			if (max == null) {
-				max = new Point2D.Double(0, 0);
-				max.setLocation(point);
+				max = point;
 			}
-			min.setLocation(Math.min(min.getX(), point.getX()), Math.min(min.getY(), point.getY()));
-			max.setLocation(Math.max(max.getX(), point.getX()), Math.max(max.getY(), point.getY()));
+			min = Point.of(Math.min(min.x, point.x), Math.min(min.y, point.y));
+			max = Point.of(Math.max(max.x, point.x), Math.max(max.y, point.y));
 		}
 		// sanity checks, in case of empty graph
 		if (min == null)
-			min = new Point2D.Double(0, 0);
+			min = Point.of(0, 0);
 		if (max == null)
-			max = new Point2D.Double(0, 0);
+			max =Point.of(0, 0);
 		// put results together
-		Point2D[] result = new Point2D[2];
+		Point[] result = new Point[2];
 		result[0] = min;
 		result[1] = max;
 		// case for just one node, make distinct
 		if (min.equals(max)) {
-			min.setLocation(min.getX() - 20, min.getY() - 20);
-			max.setLocation(max.getX() + 20, max.getY() + 20);
+			min = Point.of(min.x - 20, min.y - 20);
+			max = Point.of(max.x + 20, max.y + 20);
 		}
 		return result;
 	}
@@ -438,17 +436,18 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 		vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).setToIdentity();
 
 		// place layout center in center of the view
-		Point2D[] calc = calcBounds();
-		Point2D min = calc[0];
-		Point2D max = calc[1];
+		Point[] calc = calcBounds();
+		Point min = calc[0];
+		Point max = calc[1];
 
 		if (min == null || max == null) {
 			return; // nothing to center on
 		}
 
 		Point2D screen_center = vv.getCenter();
-		Point2D layout_bounds = new Point2D.Double(max.getX() - min.getX(), max.getY() - min.getY());
-		Point2D layout_center = new Point2D.Double(screen_center.getX() - (layout_bounds.getX() / 2) - min.getX(), screen_center.getY() - (layout_bounds.getY() / 2) - min.getY());
+		Point2D layout_bounds = new Point2D.Double(max.x - min.x, max.y - min.y);
+		Point2D layout_center = new Point2D.Double(screen_center.getX() - (layout_bounds.getX() / 2) - min.x,
+				screen_center.getY() - (layout_bounds.getY() / 2) - min.y);
 		vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).translate(layout_center.getX(), layout_center.getY());
 
 		// scale graph
@@ -466,7 +465,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	 */
 	public void changeStroke() {
 		if (oldStrokes == null) {
-			oldStrokes = visviewer.getRenderContext().getVertexStrokeTransformer();
+			oldStrokes = visviewer.getRenderContext().getVertexStrokeFunction();
 
 			Stroke stroke = new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10f, new float[] { 5f }, 0f);
 
@@ -478,19 +477,13 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 				if (!allVisible) {
 					strokes.put(ondexNode, stroke);
 				} else {
-					strokes.put(ondexNode, oldStrokes.transform(ondexNode));
+					strokes.put(ondexNode, oldStrokes.apply(ondexNode));
 				}
 			}
 
-			visviewer.getRenderContext().setVertexStrokeTransformer(new Transformer<ONDEXConcept, Stroke>() {
-
-				@Override
-				public Stroke transform(ONDEXConcept arg0) {
-					return strokes.get(arg0);
-				}
-			});
+			visviewer.getRenderContext().setVertexStrokeFunction(v -> strokes.get(v));
 		} else {
-			visviewer.getRenderContext().setVertexStrokeTransformer(oldStrokes);
+			visviewer.getRenderContext().setVertexStrokeFunction(oldStrokes);
 			oldStrokes = null;
 		}
 	}
@@ -512,7 +505,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	@Override
 	public void componentResized(ComponentEvent arg0) {
 		if (relayoutOnResize)
-			visviewer.getGraphLayout().setSize(visviewer.getSize());
+			visviewer.getVisualizationModel().getLayoutModel().setSize(visviewer.getSize().width, visviewer.getSize().height);
 	}
 
 	@Override
@@ -523,14 +516,12 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	public void dispose() {
 		super.dispose();
 		// stop layouter
-		Relaxer relaxer = visviewer.getModel().getRelaxer();
-		if (relaxer != null) {
-			relaxer.stop();
-		}
+		LayoutModel<ONDEXConcept> layoutModel = visviewer.getVisualizationModel().getLayoutModel();
+		layoutModel.stopRelaxer();
 	}
 
 	/**
-	 * Returns transformer for edge arrows.
+	 * Returns Function for edge arrows.
 	 * 
 	 * @return ONDEXEdgeArrows
 	 */
@@ -540,7 +531,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for edge colors.
+	 * Returns Function for edge colors.
 	 * 
 	 * @return ONDEXEdgeColors
 	 */
@@ -565,7 +556,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for edge labels.
+	 * Returns Function for edge labels.
 	 * 
 	 * @return ONDEXEdgeLabels
 	 */
@@ -575,7 +566,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for edge shapes.
+	 * Returns Function for edge shapes.
 	 * 
 	 * @return ONDEXEdgeShapes
 	 */
@@ -585,7 +576,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for edge strokes.
+	 * Returns Function for edge strokes.
 	 * 
 	 * @return ONDEXEdgeStrokes
 	 */
@@ -635,7 +626,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for node colours.
+	 * Returns Function for node colours.
 	 * 
 	 * @return ONDEXNodeColors
 	 */
@@ -645,7 +636,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for node draw colors.
+	 * Returns Function for node draw colors.
 	 * 
 	 * @return ONDEXNodeDrawPaint
 	 */
@@ -655,7 +646,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for node labels.
+	 * Returns Function for node labels.
 	 * 
 	 * @return ONDEXNodeLabels
 	 */
@@ -665,7 +656,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns transformer for node shapes.
+	 * Returns Function for node shapes.
 	 * 
 	 * @return ONDEXNodeShapes
 	 */
@@ -685,23 +676,24 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	/**
-	 * Returns a set with picked ONDEXEdges.
+	 * Returns a set with Selected ONDEXEdges.
 	 * 
 	 * @return Set<ONDEXEdge>
 	 */
 	@Override
-	public Set<ONDEXRelation> getPickedEdges() {
-		return visviewer.getPickedEdgeState().getPicked();
+	public Set<ONDEXRelation> getSelectedEdges() {
+		return visviewer.getSelectedEdgeState().getSelected();
 	}
 
+
 	/**
-	 * Returns a set with picked ONDEXNodes.
+	 * Returns a set with Selected ONDEXNodes.
 	 * 
 	 * @return Set<ONDEXNode>
 	 */
 	@Override
-	public Set<ONDEXConcept> getPickedNodes() {
-		return visviewer.getPickedVertexState().getPicked();
+	public Set<ONDEXConcept> getSelectedNodes() {
+		return visviewer.getSelectedVertexState().getSelected();
 	}
 
 	@Override
@@ -747,17 +739,17 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 		OVTK2Desktop.getInstance().getOVTK2Menu().updateUndoRedo(this);
 
 		// hide edges first
-		for (ONDEXRelation ondexEdge : getPickedEdges()) {
+		for (ONDEXRelation ondexEdge : getSelectedEdges()) {
 			getONDEXJUNGGraph().setVisibility(ondexEdge, false);
 		}
 
 		// hide nodes next
-		for (ONDEXConcept ondexNode : getPickedNodes()) {
+		for (ONDEXConcept ondexNode : getSelectedNodes()) {
 			getONDEXJUNGGraph().setVisibility(ondexNode, false);
 		}
 
 		// update viewer
-		getVisualizationViewer().getModel().fireStateChanged();
+		getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		edit.end();
 	}
 
@@ -839,7 +831,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 				OVTK2Desktop.getInstance().getOVTK2Menu().updateUndoRedo(this);
 
 				Set<ONDEXConcept> allnodes = new HashSet<ONDEXConcept>(graph.getVertices());
-				allnodes.removeAll(this.getPickedNodes());
+				allnodes.removeAll(this.getSelectedNodes());
 				for (ONDEXConcept allnode : allnodes) {
 					graph.setVisibility(allnode, false);
 				}
@@ -863,12 +855,12 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 					visviewer.repaint();
 				}
 			} else if (KeyEvent.getKeyText(arg0.getKeyCode()).equalsIgnoreCase("a")) {
-				PickedState<ONDEXConcept> pickState = visviewer.getPickedVertexState();
+				MutableSelectedState<ONDEXConcept> pickState = visviewer.getSelectedVertexState();
 				for (ONDEXConcept n : graph.getVertices())
-					pickState.pick(n, true);
+					pickState.select(n, true);
 			}
 
-			this.getVisualizationViewer().getModel().fireStateChanged();
+			this.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		}
 
 		else if (arg0.getKeyCode() == KeyEvent.VK_F5) {
@@ -914,8 +906,8 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 		visviewer.setDoubleBuffered(false);
 		g2d.translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
-		visviewer.paint(g2d);
-		visviewer.setDoubleBuffered(true);
+		visviewer.getComponent().paint(g2d);
+		visviewer.setDoubleBuffered(false);
 
 		return (Printable.PAGE_EXISTS);
 	}
@@ -934,15 +926,15 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	}
 
 	public void selectNeighboursOfSelection() {
-		PickedState<ONDEXConcept> ps = visviewer.getPickedVertexState();
-		Set<ONDEXConcept> selected = ps.getPicked();
+		MutableSelectedState<ONDEXConcept> ps = visviewer.getSelectedVertexState();
+		Set<ONDEXConcept> selected = ps.getSelected();
 		if (selected.size() == 1) {
 			ONDEXConcept node = selected.iterator().next();
 			ps.clear();
 			for (ONDEXConcept neighbour : graph.getNeighbors(node)) {
-				ps.pick(neighbour, true);
+				ps.select(neighbour, true);
 			}
-			getVisualizationViewer().getModel().fireStateChanged();
+			getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		}
 	}
 
@@ -961,7 +953,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 			hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 			visviewer.setRenderingHints(hints);
 		}
-		visviewer.getModel().fireStateChanged();
+		visviewer.getVisualizationModel().getModelChangeSupport().fireModelChanged();
 	}
 
 	/**
@@ -979,14 +971,8 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	 *            the edge font
 	 */
 	public void setEdgeFont(final Font font) {
-		visviewer.getRenderContext().setEdgeFontTransformer(new Transformer<ONDEXRelation, Font>() {
-
-			@Override
-			public Font transform(ONDEXRelation input) {
-				return font;
-			}
-		});
-		visviewer.getModel().fireStateChanged();
+		visviewer.getRenderContext().setEdgeFontFunction(e -> font);
+		visviewer.getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		// serialise font
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		XMLEncoder encoder = new XMLEncoder(bos);
@@ -1026,7 +1012,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	public void setShowEdgeLabels(boolean show) {
 		isShowEdgeLabels = show;
 		edgelabels.fillMask(show);
-		visviewer.getModel().fireStateChanged();
+		visviewer.getVisualizationModel().getModelChangeSupport().fireModelChanged();
 	}
 
 	/**
@@ -1039,7 +1025,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	public void setShowNodeLabels(boolean show) {
 		isShowNodeLabels = show;
 		nodelabels.fillMask(show);
-		visviewer.getModel().fireStateChanged();
+		visviewer.getVisualizationModel().getModelChangeSupport().fireModelChanged();
 	}
 
 	/**
@@ -1049,14 +1035,8 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 	 *            the node/vertex font
 	 */
 	public void setVertexFont(final Font font) {
-		visviewer.getRenderContext().setVertexFontTransformer(new Transformer<ONDEXConcept, Font>() {
-
-			@Override
-			public Font transform(ONDEXConcept input) {
-				return font;
-			}
-		});
-		visviewer.getModel().fireStateChanged();
+		visviewer.getRenderContext().setVertexFontFunction(v -> font);
+		visviewer.getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		// serialise font
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		XMLEncoder encoder = new XMLEncoder(bos);
@@ -1113,7 +1093,7 @@ public class OVTK2Viewer extends RegisteredJInternalFrame implements ActionListe
 			this.getEdgeColors().updateColor(edge);
 		}
 
-		visviewer.getModel().fireStateChanged();
+		visviewer.getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		visviewer.repaint();
 	}
 }

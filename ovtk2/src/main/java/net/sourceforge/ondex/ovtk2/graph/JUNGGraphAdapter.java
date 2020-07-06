@@ -11,14 +11,14 @@ import java.util.Map;
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.map.LazyMap;
 
-import edu.uci.ics.jung.graph.AbstractGraph;
-import edu.uci.ics.jung.graph.DirectedGraph;
-import edu.uci.ics.jung.graph.util.EdgeType;
-import edu.uci.ics.jung.graph.util.Pair;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXEntity;
 import net.sourceforge.ondex.core.ONDEXGraph;
 import net.sourceforge.ondex.core.ONDEXRelation;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.AbstractBaseGraph;
+import org.jgrapht.graph.AbstractGraph;
+import org.jungrapht.visualization.layout.algorithms.util.Pair;
 
 /**
  * Adapter to JUNG graph library adding additional visibility constrains.
@@ -26,7 +26,7 @@ import net.sourceforge.ondex.core.ONDEXRelation;
  * @author taubertj
  * 
  */
-public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEXRelation> implements DirectedGraph<ONDEXConcept, ONDEXRelation>, ONDEXGraph {
+public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEXRelation> implements Graph<ONDEXConcept, ONDEXRelation>, ONDEXGraph {
 
 	/**
 	 * generated
@@ -233,7 +233,7 @@ public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEX
 	}
 
 	@Override
-	public boolean addEdge(ONDEXRelation edge, Pair<? extends ONDEXConcept> endpoints, EdgeType edgeType) {
+	public boolean addEdge(ONDEXConcept sourceVertex, ONDEXConcept targetVertex, ONDEXRelation ondexRelation) {
 		throw new IllegalArgumentException("Method not supported.");
 	}
 
@@ -252,67 +252,68 @@ public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEX
 		return getConcept(vertex.getId()) != null && isVisible(vertex);
 	}
 
-	@Override
-	public EdgeType getDefaultEdgeType() {
-		return EdgeType.DIRECTED;
-	}
+//	@Override
+//	public EdgeType getDefaultEdgeType() {
+//		return EdgeType.DIRECTED;
+//	}
 
-	@Override
+//	@Override
 	public ONDEXConcept getDest(ONDEXRelation edge) {
 		if (!containsEdge(edge))
 			return null;
 
-		return getEndpoints(edge).getSecond();
+		return getEndpoints(edge).second;
+//				getEndpoints(edge).getSecond();
 	}
 
-	@Override
+//	@Override
 	public int getEdgeCount() {
-		return getEdges().size();
+		return edgeSet().size();
 	}
 
-	@Override
-	public int getEdgeCount(EdgeType edge_type) {
-		if (edge_type == EdgeType.DIRECTED)
-			return getEdgeCount();
-		else
-			return 0;
-	}
+//	@Override
+//	public int getEdgeCount(EdgeType edge_type) {
+//		if (edge_type == EdgeType.DIRECTED)
+//			return getEdgeCount();
+//		else
+//			return 0;
+//	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXRelation> getEdges() {
-		Collection<ONDEXRelation> edges = new ArrayList<ONDEXRelation>();
+		Collection<ONDEXRelation> edges = new ArrayList<>();
 		for (ONDEXRelation edge : getRelations())
 			if (containsEdge(edge))
 				edges.add(edge);
 		return Collections.unmodifiableCollection(edges);
 	}
 
-	@Override
-	public Collection<ONDEXRelation> getEdges(EdgeType edgeType) {
-		if (edgeType == EdgeType.DIRECTED)
-			return getEdges();
-		else
-			return null;
-	}
+//	@Override
+//	public Collection<ONDEXRelation> getEdges(EdgeType edgeType) {
+//		if (edgeType == EdgeType.DIRECTED)
+//			return getEdges();
+//		else
+//			return null;
+//	}
+//
+//	@Override
+//	public EdgeType getEdgeType(ONDEXRelation edge) {
+//		if (containsEdge(edge))
+//			return EdgeType.DIRECTED;
+//		else
+//			return null;
+//	}
 
-	@Override
-	public EdgeType getEdgeType(ONDEXRelation edge) {
-		if (containsEdge(edge))
-			return EdgeType.DIRECTED;
-		else
-			return null;
-	}
-
-	@Override
+//	@Override
 	public Pair<ONDEXConcept> getEndpoints(ONDEXRelation edge) {
 		if (!containsEdge(edge))
 			return null;
 
-		Pair<ONDEXConcept> pair = new Pair<ONDEXConcept>(edge.getFromConcept(), edge.getToConcept());
+		Pair<ONDEXConcept> pair = Pair.of(edge.getFromConcept(), edge.getToConcept());
 		return pair;
 	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXRelation> getIncidentEdges(ONDEXConcept vertex) {
 		if (!containsVertex(vertex))
 			return null;
@@ -324,7 +325,7 @@ public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEX
 		return Collections.unmodifiableCollection(incident);
 	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXRelation> getInEdges(ONDEXConcept vertex) {
 		if (!containsVertex(vertex))
 			return null;
@@ -336,7 +337,7 @@ public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEX
 		return Collections.unmodifiableCollection(in);
 	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXConcept> getNeighbors(ONDEXConcept vertex) {
 		if (!containsVertex(vertex))
 			return null;
@@ -349,63 +350,63 @@ public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEX
 		return Collections.unmodifiableCollection(neighbors);
 	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXRelation> getOutEdges(ONDEXConcept vertex) {
 		if (!containsVertex(vertex))
 			return null;
 
-		Collection<ONDEXRelation> out = new HashSet<ONDEXRelation>();
+		Collection<ONDEXRelation> out = new HashSet<>();
 		for (ONDEXRelation edge : getRelationsOfConcept(vertex))
 			if (containsEdge(edge) && edge.getFromConcept().equals(vertex))
 				out.add(edge);
 		return Collections.unmodifiableCollection(out);
 	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXConcept> getPredecessors(ONDEXConcept vertex) {
 		if (!containsVertex(vertex))
 			return null;
 
-		Collection<ONDEXConcept> preds = new HashSet<ONDEXConcept>();
+		Collection<ONDEXConcept> preds = new HashSet<>();
 		for (ONDEXRelation edge : getInEdges(vertex))
 			preds.add(getSource(edge));
 		return Collections.unmodifiableCollection(preds);
 	}
 
-	@Override
+//	@Override
 	public ONDEXConcept getSource(ONDEXRelation edge) {
 		if (!containsEdge(edge))
 			return null;
 
-		return getEndpoints(edge).getFirst();
+		return getEndpoints(edge).first;
 	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXConcept> getSuccessors(ONDEXConcept vertex) {
 		if (!containsVertex(vertex))
 			return null;
 
-		Collection<ONDEXConcept> succs = new HashSet<ONDEXConcept>();
+		Collection<ONDEXConcept> succs = new HashSet<>();
 		for (ONDEXRelation edge : getOutEdges(vertex))
 			succs.add(getDest(edge));
 		return Collections.unmodifiableCollection(succs);
 	}
 
-	@Override
+//	@Override
 	public int getVertexCount() {
 		return getVertices().size();
 	}
 
-	@Override
+//	@Override
 	public Collection<ONDEXConcept> getVertices() {
-		Collection<ONDEXConcept> vertices = new ArrayList<ONDEXConcept>();
+		Collection<ONDEXConcept> vertices = new ArrayList<>();
 		for (ONDEXConcept vertex : getConcepts())
 			if (containsVertex(vertex))
 				vertices.add(vertex);
 		return Collections.unmodifiableCollection(vertices);
 	}
 
-	@Override
+//	@Override
 	public boolean isDest(ONDEXConcept vertex, ONDEXRelation edge) {
 		if (!containsVertex(vertex) || !containsEdge(edge))
 			return false;
@@ -417,7 +418,7 @@ public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEX
 			return false;
 	}
 
-	@Override
+//	@Override
 	public boolean isSource(ONDEXConcept vertex, ONDEXRelation edge) {
 		if (!containsVertex(vertex) || !containsEdge(edge))
 			return false;
@@ -505,6 +506,46 @@ public abstract class JUNGGraphAdapter extends AbstractGraph<ONDEXConcept, ONDEX
 		 *            which ONDEXRelation is in-visible
 		 */
 		public void edgeHide(ONDEXRelation edge);
+	}
+
+	public ONDEXConcept getOpposite(ONDEXConcept vertex, ONDEXRelation edge)
+	{
+		Pair<ONDEXConcept> incident = this.getEndpoints(edge);
+		ONDEXConcept first = incident.first;
+		ONDEXConcept second = incident.second;
+		if (vertex.equals(first))
+			return second;
+		else if (vertex.equals(second))
+			return first;
+		else
+			throw new IllegalArgumentException(vertex + " is not incident to " + edge + " in this graph");
+	}
+	public ONDEXRelation findEdge(ONDEXConcept v1, ONDEXConcept v2)
+	{
+		for (ONDEXRelation e : getOutEdges(v1))
+		{
+			if (getOpposite(v1, e).equals(v2))
+				return e;
+		}
+		return null;
+	}
+
+
+	public Collection<ONDEXRelation> findEdgeSet(ONDEXConcept v1, ONDEXConcept v2)
+	{
+		if (!getVertices().contains(v1))
+			throw new IllegalArgumentException(v1 + " is not an element of this graph");
+
+		if (!getVertices().contains(v2))
+			throw new IllegalArgumentException(v2 + " is not an element of this graph");
+
+		Collection<ONDEXRelation> edges = new ArrayList<ONDEXRelation>();
+		for (ONDEXRelation e : getOutEdges(v1))
+		{
+			if (getOpposite(v1, e).equals(v2))
+				edges.add(e);
+		}
+		return Collections.unmodifiableCollection(edges);
 	}
 
 }

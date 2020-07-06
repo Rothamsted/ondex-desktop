@@ -2,12 +2,15 @@ package net.sourceforge.ondex.ovtk2.layout;
 
 import javax.swing.JPanel;
 
-import edu.uci.ics.jung.algorithms.layout.AbstractLayout;
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import org.jgrapht.Graph;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.layout.algorithms.AbstractIterativeLayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.LayoutAlgorithm;
+import org.jungrapht.visualization.layout.model.AbstractLayoutModel;
+import org.jungrapht.visualization.layout.model.LayoutModel;
 
 /**
  * Abstract class for all OVTK2 Layouter.
@@ -15,10 +18,13 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
  * @author taubertj
  * 
  */
-public abstract class OVTK2Layouter extends AbstractLayout<ONDEXConcept, ONDEXRelation> {
+public abstract class OVTK2Layouter  implements LayoutAlgorithm<ONDEXConcept> {
 
 	// current VisualizationViewer<ONDEXConcept, ONDEXRelation>
-	protected VisualizationViewer<ONDEXConcept, ONDEXRelation> viewer = null;
+	protected VisualizationViewer<ONDEXConcept, ONDEXRelation> viewer;
+
+	protected LayoutModel<ONDEXConcept> layoutModel;
+	protected Graph<ONDEXConcept, ONDEXRelation> graph;
 
 	/**
 	 * Constructor sets internal variables from given OVTK2PropertiesAggregator.
@@ -27,8 +33,14 @@ public abstract class OVTK2Layouter extends AbstractLayout<ONDEXConcept, ONDEXRe
 	 *            OVTK2PropertiesAggregator
 	 */
 	public OVTK2Layouter(OVTK2PropertiesAggregator viewer) {
-		super(viewer.getONDEXJUNGGraph());
 		this.viewer = viewer.getVisualizationViewer();
+		this.graph = viewer.getONDEXJUNGGraph();
+	}
+
+	@Override
+	public void visit(LayoutModel<ONDEXConcept> layoutModel) {
+		this.layoutModel = layoutModel;
+		this.graph = layoutModel.getGraph();
 	}
 
 	/**
@@ -48,7 +60,7 @@ public abstract class OVTK2Layouter extends AbstractLayout<ONDEXConcept, ONDEXRe
 	 *            OVTK2PropertiesAggregator
 	 */
 	public void setViewer(OVTK2PropertiesAggregator viewer) {
-		super.setGraph(viewer.getONDEXJUNGGraph());
+		layoutModel.setGraph(viewer.getONDEXJUNGGraph());
 		this.viewer = viewer.getVisualizationViewer();
 	}
 

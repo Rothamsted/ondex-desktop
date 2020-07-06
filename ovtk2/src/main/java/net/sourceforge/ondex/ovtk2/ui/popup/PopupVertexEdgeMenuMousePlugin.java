@@ -1,14 +1,14 @@
 package net.sourceforge.ondex.ovtk2.ui.popup;
 
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.control.AbstractPopupGraphMousePlugin;
+import org.jungrapht.visualization.layout.GraphElementAccessor;
+
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 
 import javax.swing.JPopupMenu;
-
-import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.AbstractPopupGraphMousePlugin;
 
 /**
  * A GraphMousePlugin that brings up distinct popup menus when an edge or vertex
@@ -78,18 +78,18 @@ public class PopupVertexEdgeMenuMousePlugin<V, E> extends AbstractPopupGraphMous
 
 		GraphElementAccessor<V, E> pickSupport = vv.getPickSupport();
 		if (pickSupport != null) {
-			final V v = pickSupport.getVertex(vv.getGraphLayout(), p.getX(), p.getY());
+			final V v = pickSupport.getVertex(vv.getVisualizationModel().getLayoutModel(), p.getX(), p.getY());
 			if (v != null) {
 				// System.out.println("Vertex " + v + " was right clicked");
 				updateVertexMenu(v, vv, p);
-				vertexPopup.show(vv, e.getX(), e.getY());
+				vertexPopup.show(vv.getComponent(), e.getX(), e.getY());
 			} else {
-				final E edge = pickSupport.getEdge(vv.getGraphLayout(), p.getX(), p.getY());
+				final E edge = pickSupport.getEdge(vv.getVisualizationModel().getLayoutModel(), p.getX(), p.getY());
 				if (edge != null) {
 					// System.out.println("Edge " + edge + " was right
 					// clicked");
 					updateEdgeMenu(edge, vv, p);
-					edgePopup.show(vv, e.getX(), e.getY());
+					edgePopup.show(vv.getComponent(), e.getX(), e.getY());
 				}
 			}
 		}

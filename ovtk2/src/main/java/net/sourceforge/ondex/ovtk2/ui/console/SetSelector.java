@@ -162,7 +162,7 @@ public class SetSelector extends javax.swing.JInternalFrame implements ActionLis
 			}
 			System.err.println("propagatedTags: " + propagatedTags.size());
 			Set<ONDEXConcept> tags = new HashSet<ONDEXConcept>();
-			for (ONDEXConcept selected : OVTK2Desktop.getDesktopResources().getSelectedViewer().getPickedNodes()) {
+			for (ONDEXConcept selected : OVTK2Desktop.getDesktopResources().getSelectedViewer().getSelectedNodes()) {
 				tags.addAll(selected.getTags());
 			}
 			System.err.println("Tags: " + tags.size());
@@ -178,7 +178,7 @@ public class SetSelector extends javax.swing.JInternalFrame implements ActionLis
 					graph.setVisibility(r, true);
 				}
 			}
-			OVTK2Desktop.getDesktopResources().getSelectedViewer().getVisualizationViewer().getModel().fireStateChanged();
+			OVTK2Desktop.getDesktopResources().getSelectedViewer().getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			// GEMLayout gem = new
 			// GEMLayout(OVTK2Desktop.getDesktopResources().getSelectedViewer());
 			// OVTK2Desktop.getDesktopResources().getSelectedViewer().getVisualizationViewer().getModel().fireStateChanged();

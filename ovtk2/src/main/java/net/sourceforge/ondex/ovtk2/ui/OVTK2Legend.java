@@ -1215,8 +1215,7 @@ public class OVTK2Legend extends RegisteredJInternalFrame implements ActionListe
 					graph.setVisibility(graph.getRelationsOfDataSource(ds), visible);
 				graph.setVisibility(graph.getConceptsOfDataSource(ds), visible);
 				// update everything of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-				viewer.getMetaGraphPanel().repaint();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();viewer.getMetaGraphPanel().repaint();
 				this.setViewer(this.getViewer());
 			}
 		}
@@ -1291,8 +1290,7 @@ public class OVTK2Legend extends RegisteredJInternalFrame implements ActionListe
 			if (columnName.equals(Config.language.getProperty("Legend.EvidenceTypes.VisibilityConcepts"))) {
 				graph.setVisibility(graph.getConceptsOfEvidenceType(et), (Boolean) data);
 				// update everything of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-				viewer.getMetaGraphPanel().repaint();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();viewer.getMetaGraphPanel().repaint();
 				this.setViewer(this.getViewer());
 			}
 
@@ -1300,8 +1298,7 @@ public class OVTK2Legend extends RegisteredJInternalFrame implements ActionListe
 			if (columnName.equals(Config.language.getProperty("Legend.EvidenceTypes.VisibilityRelations"))) {
 				graph.setVisibility(graph.getRelationsOfEvidenceType(et), (Boolean) data);
 				// update everything of change
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-				viewer.getMetaGraphPanel().repaint();
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();viewer.getMetaGraphPanel().repaint();
 				this.setViewer(this.getViewer());
 			}
 		}

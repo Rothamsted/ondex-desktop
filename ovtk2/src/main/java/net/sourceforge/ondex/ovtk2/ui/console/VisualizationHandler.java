@@ -144,7 +144,7 @@ public class VisualizationHandler implements ProcessingCheckpoint {
 			}
 
 			// update viewer
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			if (edit != null)
 				edit.end();
 		}

@@ -16,7 +16,7 @@ public class ExportNodeLabelItem extends EntityMenuItem<ONDEXConcept> {
 	@Override
 	public boolean accepts() {
 		for (ONDEXConcept node : entities) {
-			if (viewer.getNodeLabels().transform(node).length() > 0)
+			if (viewer.getNodeLabels().apply(node).length() > 0)
 				return true;
 		}
 		return false;
@@ -46,7 +46,7 @@ public class ExportNodeLabelItem extends EntityMenuItem<ONDEXConcept> {
 				writer = new BufferedWriter(new FileWriter(file));
 				for (ONDEXConcept node : entities) {
 					// get label of node
-					String label = viewer.getNodeLabels().transform(node);
+					String label = viewer.getNodeLabels().apply(node);
 					// only write showing labels
 					if (label.length() > 0)
 						writer.write(label + "\n");

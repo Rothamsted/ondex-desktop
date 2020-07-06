@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -56,17 +57,13 @@ public class ChangeEdgeSizeItem extends EntityMenuItem<ONDEXRelation> {
 				}
 
 				// wrap new transformer around old one
-				final Transformer<ONDEXRelation, Integer> oldSizes = strokes.getEdgeSizeTransformer();
-				Transformer<ONDEXRelation, Integer> newSizes = new Transformer<ONDEXRelation, Integer>() {
-
-					@Override
-					public Integer transform(ONDEXRelation arg0) {
-						if (entitiesSizes.containsKey(arg0))
-							return entitiesSizes.get(arg0);
-						if (oldSizes != null)
-							return oldSizes.transform(arg0);
-						return Config.defaultEdgeSize;
-					}
+				final Function<ONDEXRelation, Integer> oldSizes = strokes.getEdgeSizeTransformer();
+				Function<ONDEXRelation, Integer> newSizes = arg0 -> {
+					if (entitiesSizes.containsKey(arg0))
+						return entitiesSizes.get(arg0);
+					if (oldSizes != null)
+						return oldSizes.apply(arg0);
+					return Config.defaultEdgeSize;
 				};
 				strokes.setEdgeSizes(newSizes);
 			} catch (NumberFormatException nfe) {

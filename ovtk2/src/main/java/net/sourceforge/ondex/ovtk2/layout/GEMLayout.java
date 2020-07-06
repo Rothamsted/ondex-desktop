@@ -24,13 +24,15 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.SparseGraph;
-import edu.uci.ics.jung.graph.util.Pair;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
+import org.jgrapht.graph.builder.GraphTypeBuilder;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Java implementation of the gem 2D layout. <br>
@@ -78,6 +80,13 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		}
 	}
 
+	public void visit(LayoutModel<ONDEXConcept> layoutModel) {
+
+		super.visit(layoutModel);
+		this.initialize();
+		this.arrange();
+	}
+
 	/**
 	 * Compares graphs according to vertices count.
 	 * 
@@ -88,7 +97,7 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 
 		@Override
 		public int compare(Graph<?, ?> o1, Graph<?, ?> o2) {
-			return o2.getVertexCount() - o1.getVertexCount();
+			return o2.vertexSet().size() - o1.vertexSet().size();
 		}
 
 	}
@@ -407,23 +416,21 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 	 * 
 	 * @return Point2D[]
 	 */
-	private Point2D[] calcBounds(Graph<ONDEXConcept, ONDEXRelation> graph, Map<ONDEXConcept, Point2D> coords) {
-		Point2D[] result = new Point2D[2];
-		Point2D min = null;
-		Point2D max = null;
-		Iterator<ONDEXConcept> it = graph.getVertices().iterator();
+	private Point[] calcBounds(Graph<ONDEXConcept, ONDEXRelation> graph, Map<ONDEXConcept, Point> coords) {
+		Point[] result = new Point[2];
+		Point min = null;
+		Point max = null;
+		Iterator<ONDEXConcept> it = graph.vertexSet().iterator();
 		while (it.hasNext()) {
-			Point2D point = coords.get(it.next());
+			Point point = coords.get(it.next());
 			if (min == null) {
-				min = new Point2D.Double(0, 0);
-				min.setLocation(point);
+				min = point;
 			}
 			if (max == null) {
-				max = new Point2D.Double(0, 0);
-				max.setLocation(point);
+				max = point;
 			}
-			min.setLocation(Math.min(min.getX(), point.getX()), Math.min(min.getY(), point.getY()));
-			max.setLocation(Math.max(max.getX(), point.getX()), Math.max(max.getY(), point.getY()));
+			min = Point.of(Math.min(min.x, point.x), Math.min(min.y, point.y));
+			max = Point.of(Math.max(max.x, point.x), Math.max(max.y, point.y));
 		}
 		result[0] = min;
 		result[1] = max;
@@ -449,17 +456,18 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		}
 
 		// contains all possible subgraphs
-		Set<Graph<ONDEXConcept, ONDEXRelation>> subgraphs = new HashSet<Graph<ONDEXConcept, ONDEXRelation>>();
+		Set<Graph<ONDEXConcept, ONDEXRelation>> subgraphs = new HashSet<>();
 
 		// sort each vertex into one subgraph
-		Set<ONDEXConcept> sorted = new HashSet<ONDEXConcept>();
-		for (ONDEXConcept n : original.getVertices()) {
+		Set<ONDEXConcept> sorted = new HashSet<>();
+		for (ONDEXConcept n : original.vertexSet()) {
 
 			// Orphan node
 			if (!sorted.contains(n)) {
 
 				// create new cluster starting at this node
-				Graph<ONDEXConcept, ONDEXRelation> cluster = new SparseGraph<ONDEXConcept, ONDEXRelation>();
+				Graph<ONDEXConcept, ONDEXRelation> cluster =
+						GraphTypeBuilder.<ONDEXConcept, ONDEXRelation>forGraphType(graph.getType()).buildGraph();
 				subgraphs.add(cluster);
 
 				// add node to new cluster and mark as sorted
@@ -467,8 +475,8 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 				sorted.add(n);
 
 				// inspect neighbours of n do BFS
-				Queue<ONDEXConcept> queue = new LinkedList<ONDEXConcept>();
-				Collection<ONDEXConcept> neigbours = original.getNeighbors(n);
+				Queue<ONDEXConcept> queue = new LinkedList<>();
+				Collection<ONDEXConcept> neigbours = Graphs.neighborListOf(original, n);
 				queue.addAll(neigbours);
 
 				// process queue
@@ -481,13 +489,17 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 						sorted.add(next);
 
 						// add edges to cluster
-						Collection<ONDEXRelation> nextEdges = original.getIncidentEdges(next);
+						Collection<ONDEXRelation> nextEdges = new HashSet<>();
+						nextEdges.addAll(original.outgoingEdgesOf(next));
+						nextEdges.addAll(original.incomingEdgesOf(next));
 						for (ONDEXRelation edge : nextEdges) {
-							cluster.addEdge(edge, original.getSource(edge), original.getDest(edge));
+							cluster.addVertex(original.getEdgeSource(edge));
+							cluster.addVertex(original.getEdgeTarget(edge));
+							cluster.addEdge(original.getEdgeSource(edge), original.getEdgeTarget(edge), edge);
 						}
 
 						// proceed to next level
-						queue.addAll(original.getNeighbors(next));
+						queue.addAll(Graphs.neighborListOf(original, next));
 					}
 				}
 			}
@@ -495,8 +507,6 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 			if (cancelled)
 				return subgraphs;
 		}
-		// System.out.println(subgraphs);
-
 		return subgraphs;
 	}
 
@@ -878,19 +888,17 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		clustered = boxCluster.isSelected();
 
 		if (clustered) {
-			Set<Graph<ONDEXConcept, ONDEXRelation>> clusters = clusterGraph(getGraph());
+			Set<Graph<ONDEXConcept, ONDEXRelation>> clusters = clusterGraph(graph);
 			nbClusters = clusters.size();
 			runClustered(clusters);
 		} else {
-			runNormal(getGraph());
+			runNormal(graph);
 
 			// set location of nodes in graph
 			for (int i = 0; i < nodeCount; i++) {
 				GemP p = gemProp[i];
 				ONDEXConcept n = invmap[i];
-
-				Point2D coord = this.transform(n);
-				coord.setLocation(p.x, p.y);
+				layoutModel.set(n, p.x, p.y);
 			}
 		}
 		endTime = System.currentTimeMillis();
@@ -1006,10 +1014,11 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		iX += (centerX / nodeCount - pX) * p.mass * o_gravity;
 		iY += (centerY / nodeCount - pY) * p.mass * o_gravity;
 
-		for (ONDEXRelation e : graph.getEdges()) {
-			Pair<ONDEXConcept> ends = graph.getEndpoints(e);
-			u = nodeNumbers.get(ends.getFirst());
-			w = nodeNumbers.get(ends.getSecond());
+		for (ONDEXRelation e : graph.edgeSet()) {
+			ONDEXConcept source = graph.getEdgeSource(e);
+			ONDEXConcept target = graph.getEdgeTarget(e);
+			u = nodeNumbers.get(source);
+			w = nodeNumbers.get(target);
 			if (u != v && w != v) {
 				up = gemProp[u];
 				wp = gemProp[w];
@@ -1066,10 +1075,6 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		stop_temperature = (int) (o_finaltemp * o_finaltemp * ELENSQR * nodeCount);
 		stop_iteration = o_maxiter * nodeCount * nodeCount;
 
-		// System.out.print( "optimise phase -- temp " );
-		// System.out.print( stop_temperature + " iter ");
-		// System.out.println ( stop_iteration );
-
 		while (temperature > stop_temperature && iteration < stop_iteration) {
 			o_round(graph);
 			if ((iteration % 20000) == 0) {
@@ -1107,7 +1112,7 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		Arrays.sort(sortedSubgraphs, new SubGraphComparator());
 
 		// cache local layout
-		Map<Graph<ONDEXConcept, ONDEXRelation>, Map<ONDEXConcept, Point2D>> localLayouts = new HashMap<Graph<ONDEXConcept, ONDEXRelation>, Map<ONDEXConcept, Point2D>>();
+		Map<Graph<ONDEXConcept, ONDEXRelation>, Map<ONDEXConcept, Point>> localLayouts = new HashMap<Graph<ONDEXConcept, ONDEXRelation>, Map<ONDEXConcept, Point>>();
 
 		int minX = Integer.MAX_VALUE;
 		int maxX = Integer.MIN_VALUE;
@@ -1124,13 +1129,13 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 			runNormal((Graph<ONDEXConcept, ONDEXRelation>) subgraph);
 
 			// set location of nodes in subgraph
-			localLayouts.put((Graph<ONDEXConcept, ONDEXRelation>) subgraph, new HashMap<ONDEXConcept, Point2D>());
+			localLayouts.put((Graph<ONDEXConcept, ONDEXRelation>) subgraph, new HashMap<>());
 			for (int i = 0; i < nodeCount; i++) {
 				GemP p = gemProp[i];
 				ONDEXConcept n = invmap[i];
 
-				Point2D coord = this.transform(n);
-				coord.setLocation(p.x, p.y);
+				Point coord = Point.of(p.x, p.y);
+				layoutModel.set(n, coord);
 
 				if (p.x < minX)
 					minX = p.x;
@@ -1158,11 +1163,11 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		double maxposY = 0;
 		for (Graph<?, ?> sub : sortedSubgraphs) {
 			Graph<ONDEXConcept, ONDEXRelation> subgraph = (Graph<ONDEXConcept, ONDEXRelation>) sub;
-			Map<ONDEXConcept, Point2D> coords = localLayouts.get(subgraph);
+			Map<ONDEXConcept, Point> coords = localLayouts.get(subgraph);
 
 			// calculate bounds required for normalisation
-			Point2D[] result = calcBounds(subgraph, coords);
-			Point2D min = result[0];
+			Point[] result = calcBounds(subgraph, coords);
+			Point min = result[0];
 
 			// current expansion
 			double tmpY = 0;
@@ -1172,17 +1177,19 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 			Iterator<ONDEXConcept> keys = coords.keySet().iterator();
 			while (keys.hasNext()) {
 				ONDEXConcept n = keys.next();
-				Point2D coord = coords.get(n);
+				Point coord = coords.get(n);
 				// centre at 0,0 and offset
-				double newX = offsetX + coord.getX() - min.getX();
-				double newY = offsetY + coord.getY() - min.getY();
+				double newX = offsetX + coord.x - min.x;
+				double newY = offsetY + coord.y - min.y;
 
 				// calculate maximum boundaries
 				if (newX > tmpX)
 					tmpX = newX;
 				if (newY > tmpY)
 					tmpY = newY;
-				coord.setLocation(newX, newY);
+				coord = Point.of(newX, newY);
+				localLayouts.get(subgraph).put(n, Point.of(newX, newY));
+				layoutModel.set(n, Point.of(newX, newY));
 			}
 
 			// shift horizontally keep track of vertical
@@ -1206,7 +1213,7 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 	 */
 	private void runNormal(Graph<ONDEXConcept, ONDEXRelation> graph) {
 
-		Collection<ONDEXConcept> nodes = graph.getVertices();
+		Collection<ONDEXConcept> nodes = graph.vertexSet();
 
 		nodeCount = nodes.size();
 
@@ -1223,7 +1230,7 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		Iterator<ONDEXConcept> nodeSet = nodes.iterator();
 		for (int i = 0; nodeSet.hasNext(); i++) {
 			ONDEXConcept n = nodeSet.next();
-			gemProp[i] = new GemP(graph.getOutEdges(n).size());
+			gemProp[i] = new GemP(graph.outgoingEdgesOf(n).size());
 			invmap[i] = n;
 			nodeNumbers.put(n, i);
 		}
@@ -1231,7 +1238,7 @@ public class GEMLayout extends OVTK2Layouter implements ChangeListener, Monitora
 		// fill adjacent lists
 		Collection<ONDEXConcept> neighbors;
 		for (int i = 0; i < nodeCount; i++) {
-			neighbors = graph.getNeighbors(invmap[i]);
+			neighbors = Graphs.neighborListOf(graph, invmap[i]);
 			adjacent.put(i, new ArrayList<Integer>(neighbors.size()));
 			for (ONDEXConcept n : neighbors) {
 				adjacent.get(i).add(nodeNumbers.get(n));

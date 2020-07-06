@@ -12,9 +12,8 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.stax2.XMLStreamReader2;
+import org.jungrapht.visualization.annotations.Annotation;
 
-import edu.uci.ics.jung.visualization.annotations.Annotation;
-import edu.uci.ics.jung.visualization.annotations.Annotation.Layer;
 
 /**
  * Turn XML into JUNG Annotations.
@@ -91,11 +90,11 @@ public class AnnotationXMLReader {
 	 * @return
 	 * @throws XMLStreamException
 	 */
-	private static Layer readLayer(XMLStreamReader2 xmlr) throws XMLStreamException {
+	private static Annotation.Layer readLayer(XMLStreamReader2 xmlr) throws XMLStreamException {
 
 		// layer tag
 		xmlr.nextTag();
-		Layer layer = Annotation.Layer.valueOf(xmlr.getElementText());
+		Annotation.Layer layer = Annotation.Layer.valueOf(xmlr.getElementText());
 
 		return layer;
 	}
@@ -177,7 +176,7 @@ public class AnnotationXMLReader {
 		String text = xmlr.getElementText();
 
 		// get layer
-		Layer layer = readLayer(xmlr);
+		Annotation.Layer layer = readLayer(xmlr);
 
 		// get fill
 		boolean fill = readFill(xmlr);
@@ -278,7 +277,7 @@ public class AnnotationXMLReader {
 		}
 
 		// get layer
-		Layer layer = readLayer(xmlr);
+		Annotation.Layer layer = readLayer(xmlr);
 
 		// get fill
 		boolean fill = readFill(xmlr);

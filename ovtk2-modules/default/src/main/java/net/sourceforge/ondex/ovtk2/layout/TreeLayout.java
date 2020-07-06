@@ -10,8 +10,6 @@ package net.sourceforge.ondex.ovtk2.layout;
  * Created on Jul 9, 2005
  */
 import java.awt.BorderLayout;
-import java.awt.Point;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,11 +29,14 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import edu.uci.ics.jung.graph.Graph;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.jgrapht.Graph;
+import org.jgrapht.Graphs;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * TreeLayout adapted from the JUNG2 library.
@@ -69,7 +70,7 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 	/**
 	 * current linking point of last node
 	 */
-	private final Point m_currentPoint = new Point();
+	private Point m_currentPoint;
 
 	/**
 	 * build tree for reversed edge direction
@@ -106,6 +107,11 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 		super(viewer);
 	}
 
+
+	public void visit(LayoutModel<ONDEXConcept> layoutModel) {
+		super.visit(layoutModel);
+		buildTree();
+	}
 	/**
 	 * Build the tree on the whole graph.
 	 * 
@@ -113,7 +119,8 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 	void buildTree() {
 
 		// starting point of first root node
-		this.m_currentPoint.setLocation(0, 20);
+//		this.m_currentPoint.setLocation(0, 20);
+		this.m_currentPoint = Point.of(0, 20);
 		if (roots.size() > 0 && graph != null) {
 			// get total X size
 			calculateDimensionX(roots);
@@ -121,8 +128,10 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 			for (ONDEXConcept v : roots) {
 				state = "building tree " + progress;
 				calculateDimensionX(v);
-				m_currentPoint.x += this.basePositions.get(v) / 2 + 50;
-				buildTree(v, this.m_currentPoint.x);
+				m_currentPoint = m_currentPoint.add(this.basePositions.get(v) / 2 + 50, 0);
+//				m_currentPoint.x
+//						+= this.basePositions.get(v) / 2 + 50;
+				buildTree(v, (int)this.m_currentPoint.x);
 				progress++;
 				if (cancelled)
 					return;
@@ -145,8 +154,9 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 			allreadyDone.add(v);
 
 			// go one level further down
-			this.m_currentPoint.y += this.distY;
-			this.m_currentPoint.x = x;
+//			this.m_currentPoint.y += this.distY;
+//			this.m_currentPoint.x = x;
+			this.m_currentPoint = Point.of(x, this.m_currentPoint.y + this.distY);
 
 			this.setCurrentPositionFor(v);
 
@@ -160,9 +170,11 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(v);
+				children = Graphs.predecessorListOf(graph, v);
+//						graph.getPredecessors(v);
 			else
-				children = graph.getSuccessors(v);
+				children = Graphs.successorListOf(graph, v);
+//						graph.getSuccessors(v);
 
 			// get new x position from children
 			for (ONDEXConcept element : children) {
@@ -176,7 +188,8 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 
 			// simply align them in y dimension, this is edge direction
 			// dependent, otherwise it gets upside down
-			this.m_currentPoint.y -= this.distY;
+//			this.m_currentPoint.y -= this.distY;
+			this.m_currentPoint = this.m_currentPoint.add(0, -this.distY);
 		}
 	}
 
@@ -195,9 +208,9 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(v);
+				children = Graphs.predecessorListOf(graph, v);
 			else
-				children = graph.getSuccessors(v);
+				children = Graphs.successorListOf(graph, v);
 
 			// check dimension for children
 			int childrenNum = children.size();
@@ -238,9 +251,9 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 			if (!seen.contains(current)) {
 				// check selection of edge direction
 				if (reversed)
-					stack.addAll(graph.getPredecessors(current));
+					stack.addAll(Graphs.predecessorListOf(graph, current));
 				else
-					stack.addAll(graph.getSuccessors(current));
+					stack.addAll(Graphs.successorListOf(graph, current));
 				// check dimension for children
 				size = distX;
 				size = Math.max(0, size - distX);
@@ -278,17 +291,17 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 		// check selection of edge direction
 		Collection<ONDEXConcept> parents = null;
 		if (reversed)
-			parents = graph.getPredecessors(p);
+			parents = Graphs.predecessorListOf(graph, p);
 		else
-			parents = graph.getSuccessors(p);
+			parents = Graphs.successorListOf(graph, p);
 		for (ONDEXConcept c : parents) {
 
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(c);
+				children = Graphs.predecessorListOf(graph, c);
 			else
-				children = graph.getSuccessors(c);
+				children = Graphs.successorListOf(graph, c);
 
 			if (children.size() == 0) {
 				v.add(c);
@@ -311,17 +324,17 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 		// check selection of edge direction
 		Collection<ONDEXConcept> parents = null;
 		if (reversed)
-			parents = graph.getPredecessors(v);
+			parents = Graphs.predecessorListOf(graph, v);
 		else
-			parents = graph.getSuccessors(v);
+			parents = Graphs.successorListOf(graph, v);
 		for (ONDEXConcept c : parents) {
 
 			// check selection of edge direction
 			Collection<ONDEXConcept> children = null;
 			if (reversed)
-				children = graph.getPredecessors(c);
+				children = Graphs.predecessorListOf(graph, c);
 			else
-				children = graph.getSuccessors(c);
+				children = Graphs.successorListOf(graph, c);
 
 			// base: at leaf node, no more children
 			if (children.size() == 0) {
@@ -421,12 +434,12 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 	private Collection<ONDEXConcept> getRoots(
 			Graph<ONDEXConcept, ONDEXRelation> g) {
 		Set<ONDEXConcept> roots = new HashSet<ONDEXConcept>();
-		for (ONDEXConcept n : g.getVertices()) {
+		for (ONDEXConcept n : g.vertexSet()) {
 			// check selection of edge direction
-			if (reversed && g.getSuccessorCount(n) == 0) {
+			if (reversed && g.outDegreeOf(n) == 0) {
 				roots.add(n);
 			}
-			if (!reversed && g.getPredecessorCount(n) == 0) {
+			if (!reversed && g.inDegreeOf(n) == 0) {
 				roots.add(n);
 			}
 		}
@@ -436,13 +449,13 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 	/**
 	 * This is not an incremental layout.
 	 * 
-	 * @see edu.uci.ics.jung.visualization.Layout#incrementsAreDone()
+//	 * @see edu.uci.ics.jung.visualization.Layout#incrementsAreDone()
 	 */
 	public boolean incrementsAreDone() {
 		return true;
 	}
 
-	@Override
+//	@Override
 	public void initialize() {
 
 		cancelled = false;
@@ -453,7 +466,7 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 		allreadyDone.clear();
 		basePositions.clear();
 		distX = distY = 50;
-		locations.clear();
+		layoutModel.getLocations().clear();
 
 		// get roots in graph
 		roots = getRoots(graph);
@@ -466,7 +479,7 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 		buildTree();
 	}
 
-	@Override
+//	@Override
 	public void reset() {
 		initialize();
 	}
@@ -478,8 +491,9 @@ public class TreeLayout extends OVTK2Layouter implements Monitorable {
 	 *            ONDEXConcept to set location for
 	 */
 	private void setCurrentPositionFor(ONDEXConcept vertex) {
-		Point2D coord = transform(vertex);
-		coord.setLocation(m_currentPoint);
+//		Point coord = layoutModel.apply(vertex);
+//		coord.setLocation(m_currentPoint);
+		layoutModel.set(vertex, m_currentPoint);
 	}
 
 	@Override

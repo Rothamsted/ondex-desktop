@@ -1,19 +1,21 @@
 package net.sourceforge.ondex.ovtk2.layout;
 
 import java.awt.geom.Point2D;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import edu.uci.ics.jung.algorithms.layout.Layout;
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXGraphMetaData;
-import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Layouter which places the nodes according to their Attribute graphicalX/Y.
@@ -40,12 +42,13 @@ public class StaticLayout extends OVTK2Layouter implements Monitorable {
 	/**
 	 * old layouter.
 	 */
-	private Layout<ONDEXConcept, ONDEXRelation> oldLayouter;
-
+//	private Layout<ONDEXConcept, ONDEXRelation> oldLayouter;
+	private Map<ONDEXConcept, Point> oldLocations;
 	/**
 	 * debug flag.
 	 */
 	private static final boolean DEBUG = false;
+
 
 	/**
 	 * Constructor sets OVTK2PropertiesAggregator.
@@ -55,7 +58,18 @@ public class StaticLayout extends OVTK2Layouter implements Monitorable {
 	 */
 	public StaticLayout(OVTK2PropertiesAggregator viewer) {
 		super(viewer);
-		oldLayouter = viewer.getVisualizationViewer().getGraphLayout();
+//		oldLayouter = viewer.getVisualizationViewer().getGraphLayout();
+//		Map<ONDEXConcept, Point> locations = new HashMap<>(
+//		viewer.getVisualizationViewer().getVisualizationModel().getLayoutModel()
+//				.getLocations());
+	}
+
+	@Override
+	public void visit(LayoutModel<ONDEXConcept> layoutModel) {
+		this.layoutModel = layoutModel;
+		oldLocations =new HashMap<>(
+				layoutModel
+						.getLocations());
 	}
 
 	public void reset() {
@@ -68,7 +82,7 @@ public class StaticLayout extends OVTK2Layouter implements Monitorable {
 		progress = 0;
 		state = Monitorable.STATE_IDLE;
 
-		ONDEXJUNGGraph graph = (ONDEXJUNGGraph) this.getGraph();
+		ONDEXJUNGGraph graph = (ONDEXJUNGGraph) this.graph;
 		if (graph != null) {
 
 			// check for attribute names
@@ -97,9 +111,9 @@ public class StaticLayout extends OVTK2Layouter implements Monitorable {
 				if (visible == null || visible.getValue().equals(Boolean.TRUE)) {
 
 					// get possible preset coordinates
-					Point2D coord = oldLayouter.transform(c);
-					double x = coord.getX();
-					double y = coord.getY();
+					Point coord = oldLocations.get(c);
+					double x = coord.x;
+					double y = coord.y;
 					if (DEBUG)
 						System.err.println("old coordinate:\t" + x + "\t" + y);
 
@@ -114,7 +128,8 @@ public class StaticLayout extends OVTK2Layouter implements Monitorable {
 						y = (Double) graphicalY.getValue();
 
 					// set coordinates
-					this.transform(c).setLocation(x, y);
+					layoutModel.set(c, x, y);
+//					this.transform(c).setLocation(x, y);
 				} else {
 					// hide node
 					graph.setVisibility(c, false);
@@ -136,7 +151,7 @@ public class StaticLayout extends OVTK2Layouter implements Monitorable {
 
 	@Override
 	public int getMaxProgress() {
-		return getGraph().getVertexCount() + 1;
+		return graph.vertexSet().size() + 1;
 	}
 
 	@Override
@@ -176,6 +191,6 @@ public class StaticLayout extends OVTK2Layouter implements Monitorable {
 
 	@Override
 	public void cleanUp() {
-		oldLayouter = null;
+		oldLocations = null;
 	}
 }

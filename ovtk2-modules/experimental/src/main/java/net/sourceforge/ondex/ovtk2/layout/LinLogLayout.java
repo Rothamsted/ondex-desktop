@@ -126,7 +126,7 @@ public class LinLogLayout extends OVTK2Layouter implements ActionListener,
 	 * clustering, writes the layout and the clustering into a specified output
 	 * file, and displays them in a dialog.
 	 * 
-	 * @param args
+	 * @param viewer
 	 *            number of dimensions, name of the input file and of the output
 	 *            file. If <code>args.length != 3</code>, the method outputs a
 	 *            help message.
@@ -296,7 +296,7 @@ public class LinLogLayout extends OVTK2Layouter implements ActionListener,
 		return null;
 	}
 
-	@Override
+//	@Override
 	public void initialize() {
 		progress = 0;
 		cancelled = false;
@@ -469,7 +469,7 @@ public class LinLogLayout extends OVTK2Layouter implements ActionListener,
 	 * outgoing edges to the edge weight (the weight of the edge from the source
 	 * node to the target node). Schematically, source -> target -> edge weight.
 	 * 
-	 * @param filename
+//	 * @param filename
 	 *            name of the file to read from.
 	 * @return read graph.
 	 */
@@ -480,7 +480,7 @@ public class LinLogLayout extends OVTK2Layouter implements ActionListener,
 		double weight = 1.0f;
 		if (an != null) {
 			weight = Double.POSITIVE_INFINITY;
-			for (ONDEXRelation r : graph.getEdges()) {
+			for (ONDEXRelation r : graph.edgeSet()) {
 				Attribute attr = r.getAttribute(an);
 				if (attr != null) {
 					double w = ((Number) attr.getValue()).doubleValue();
@@ -490,7 +490,7 @@ public class LinLogLayout extends OVTK2Layouter implements ActionListener,
 			}
 		}
 
-		for (ONDEXRelation r : graph.getEdges()) {
+		for (ONDEXRelation r : graph.edgeSet()) {
 			ONDEXConcept source = r.getFromConcept();
 			ONDEXConcept target = r.getToConcept();
 			// parse weight from attribute
@@ -509,7 +509,7 @@ public class LinLogLayout extends OVTK2Layouter implements ActionListener,
 		return result;
 	}
 
-	@Override
+//	@Override
 	public void reset() {
 		initialize();
 	}
@@ -544,7 +544,7 @@ public class LinLogLayout extends OVTK2Layouter implements ActionListener,
 		for (Node node : nodeToPosition.keySet()) {
 			double[] position = nodeToPosition.get(node);
 			// int cluster = nodeToCluster.get(node);
-			this.setLocation(node.concept, position[0], position[1]);
+			layoutModel.set(node.concept, position[0], position[1]);
 		}
 	}
 

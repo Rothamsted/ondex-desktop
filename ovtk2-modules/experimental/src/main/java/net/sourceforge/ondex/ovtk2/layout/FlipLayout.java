@@ -7,10 +7,11 @@ import java.util.HashSet;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import edu.uci.ics.jung.algorithms.layout.Layout;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Vertically flips the selected nodes.
@@ -30,7 +31,7 @@ public class FlipLayout extends OVTK2Layouter {
 	/**
 	 * old layouter.
 	 */
-	private Layout<ONDEXConcept, ONDEXRelation> oldLayouter;
+//	private LayoutModel<ONDEXConcept> oldLayouter;
 
 	private OVTK2PropertiesAggregator aViewer;
 
@@ -42,7 +43,15 @@ public class FlipLayout extends OVTK2Layouter {
 	public FlipLayout(OVTK2PropertiesAggregator viewer) {
 		super(viewer);
 		aViewer = viewer;
-		oldLayouter = viewer.getVisualizationViewer().getGraphLayout();
+//		oldLayouter = viewer.getVisualizationViewer().getVisualizationModel().getLayoutModel();
+//		graph = oldLayouter.getGraph();
+	}
+
+	@Override
+	public void visit(LayoutModel<ONDEXConcept> layoutModel) {
+		this.layoutModel = layoutModel;
+		this.graph = layoutModel.getGraph();
+		initialize();
 	}
 
 	// ####METHODS####
@@ -60,62 +69,63 @@ public class FlipLayout extends OVTK2Layouter {
 	/**
 	 * runs layouter
 	 * 
-	 * @see edu.uci.ics.jung.algorithms.layout.Layout#initialize()
+//	 * @see edu.uci.ics.jung.algorithms.layout.Layout#initialize()
 	 */
-	@Override
+//	@Override
 	public void initialize() {
-		Collection<ONDEXConcept> nodes = aViewer.getPickedNodes();
+		Collection<ONDEXConcept> nodes = aViewer.getSelectedNodes();
 		if (nodes == null || nodes.size() == 0)
-			nodes = this.getGraph().getVertices();
+			nodes = graph.vertexSet();
 		double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
 		for (ONDEXConcept node : nodes) {
-			Point2D coord = oldLayouter.transform(node);
-			if (coord.getY() < min)
-				min = coord.getY();
-			if (coord.getY() > max)
-				max = coord.getY();
+			Point coord = layoutModel.apply(node);
+			if (coord.y < min)
+				min = coord.y;
+			if (coord.y > max)
+				max = coord.y;
 		}
 		if (DEBUG)
 			System.out.println("min = " + min + "\tmax = " + max);
 
-		if (nodes.size() < getGraph().getVertices().size()) {
+		if (nodes.size() < graph.vertexSet().size()) {
 			Collection<ONDEXConcept> rest = new HashSet<ONDEXConcept>();
-			rest.addAll(getGraph().getVertices());
+			rest.addAll(graph.vertexSet());
 			rest.removeAll(nodes);
 			for (ONDEXConcept node : rest) {
-				Point2D coord = oldLayouter.transform(node);
-				double y = coord.getY();
-				double x = coord.getX();
-				Point2D coordNew = transform(node);
-				coordNew.setLocation(x, y);
+				Point coord = layoutModel.apply(node);
+				double y = coord.y;
+				double x = coord.x;
+//				Point coordNew = apply(node);
+				layoutModel.set(node, x, y);
 			}
 		}
 
 		for (ONDEXConcept node : nodes) {
-			Point2D coord = oldLayouter.transform(node);
-			double y = coord.getY();
-			double x = coord.getX();
+			Point coord = layoutModel.apply(node);
+			double y = coord.y;
+			double x = coord.x;
 			if (DEBUG)
 				System.out.println("x = " + x + "\ty = " + y);
 			y = max - (y - min);
-			Point2D coordNew = transform(node);
-			coordNew.setLocation(x, y);
+//			Point2D coordNew = transform(node);
+//			coordNew.setLocation(x, y);
+			layoutModel.set(node, x, y);
 		}
 	}
 
 	/**
 	 * reruns layouter
 	 * 
-	 * @see edu.uci.ics.jung.algorithms.layout.Layout#reset()
+//	 * @see edu.uci.ics.jung.algorithms.layout.Layout#reset()
 	 */
-	@Override
+//	@Override
 	public void reset() {
 		initialize();
 	}
 	
-	@Override 
-	public void cleanUp(){
-		oldLayouter = null;
-	}
+//	@Override
+//	public void cleanUp(){
+//		oldLayouter = null;
+//	}
 
 }

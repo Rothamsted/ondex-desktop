@@ -146,7 +146,7 @@ public abstract class EntityMenuItem<E extends ONDEXEntity> implements MenuPoint
 			public final void actionPerformed(ActionEvent e) {
 
 				// set to waiting cursor
-				Cursor cursor = v.getVisualizationViewer().getCursor();
+				Cursor cursor = v.getVisualizationViewer().getComponent().getCursor();
 				v.getVisualizationViewer().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				RootPaneContainer root = findRoot((Component) v);
 				root.getGlassPane().setVisible(true);

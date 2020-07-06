@@ -99,7 +99,7 @@ public class OVTK2AnnotatorInternalFrameListener implements InternalFrameListene
 				desktop.actionPerformed(new ActionEvent(item, ActionEvent.ACTION_PERFORMED, AppearanceMenuAction.EDGESIZE));
 
 				// reset icon transformer, might have been set by annotator
-				viewer.getVisualizationViewer().getRenderContext().setVertexIconTransformer(null);
+				viewer.getVisualizationViewer().getRenderContext().setVertexIconFunction(null);
 
 				// cleanup in title
 				String name = viewer.getTitle();

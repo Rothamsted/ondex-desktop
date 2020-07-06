@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.apache.commons.collections15.Factory;
 import org.apache.commons.collections15.Transformer;
@@ -207,12 +208,7 @@ public class Annotation {
 		}
 
 		// set transformer for node sizes
-		nodeShapes.setNodeSizes(new Transformer<ONDEXConcept, Integer>() {
-			@Override
-			public Integer transform(ONDEXConcept input) {
-				return amplification.get(input);
-			}
-		});
+		nodeShapes.setNodeSizes(input -> amplification.get(input));
 		nodeShapes.updateAll();
 	}
 

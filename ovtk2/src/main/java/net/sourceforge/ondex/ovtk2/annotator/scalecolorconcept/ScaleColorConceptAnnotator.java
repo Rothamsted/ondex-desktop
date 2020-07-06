@@ -374,8 +374,7 @@ public class ScaleColorConceptAnnotator extends OVTK2Annotator implements Action
 
 		used = true;
 		viewer.updateViewer(null);
-		viewer.getVisualizationViewer().getModel().fireStateChanged();
-	}
+		viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();}
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {

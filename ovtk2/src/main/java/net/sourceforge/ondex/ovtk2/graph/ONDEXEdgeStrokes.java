@@ -4,8 +4,7 @@ import java.awt.BasicStroke;
 import java.awt.Stroke;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.commons.collections15.Transformer;
+import java.util.function.Function;
 
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.core.RelationType;
@@ -16,10 +15,10 @@ import net.sourceforge.ondex.ovtk2.config.Config;
  * 
  * @author taubertj
  */
-public class ONDEXEdgeStrokes implements Transformer<ONDEXRelation, Stroke> {
+public class ONDEXEdgeStrokes implements Function<ONDEXRelation, Stroke> {
 
 	// edge stroke size function
-	private Transformer<ONDEXRelation, Integer> esf = null;
+	private Function<ONDEXRelation, Integer> esf = null;
 
 	// caches stroke to relation type mapping
 	private Map<RelationType, Stroke> strokes = new HashMap<RelationType, Stroke>();
@@ -29,7 +28,7 @@ public class ONDEXEdgeStrokes implements Transformer<ONDEXRelation, Stroke> {
 	 * 
 	 * @return Transformer<ONDEXRelation, Integer>
 	 */
-	public Transformer<ONDEXRelation, Integer> getEdgeSizeTransformer() {
+	public Function<ONDEXRelation, Integer> getEdgeSizeTransformer() {
 		return esf;
 	}
 
@@ -39,7 +38,7 @@ public class ONDEXEdgeStrokes implements Transformer<ONDEXRelation, Stroke> {
 	 * @param esf
 	 *            edge stroke size transformer
 	 */
-	public void setEdgeSizes(Transformer<ONDEXRelation, Integer> esf) {
+	public void setEdgeSizes(Function<ONDEXRelation, Integer> esf) {
 		this.esf = esf;
 	}
 
@@ -50,10 +49,10 @@ public class ONDEXEdgeStrokes implements Transformer<ONDEXRelation, Stroke> {
 	 *            ONDEXRelation
 	 * @return String
 	 */
-	public Stroke transform(ONDEXRelation edge) {
+	public Stroke apply(ONDEXRelation edge) {
 		if (esf != null) {
 			// transform edge thickness
-			return new BasicStroke(esf.transform(edge));
+			return new BasicStroke(esf.apply(edge));
 		} else {
 			// without a size transformer
 			if (!strokes.containsKey(edge.getOfType())) {

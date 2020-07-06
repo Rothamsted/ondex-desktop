@@ -4,8 +4,8 @@ import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.stax2.XMLStreamWriter2;
 
-import edu.uci.ics.jung.visualization.renderers.Renderer;
 import net.sourceforge.ondex.ovtk2.ui.dialog.DialogConceptLabel;
+import org.jungrapht.visualization.renderers.Renderer;
 
 /**
  * Turns a DialogConceptLabel into XML.

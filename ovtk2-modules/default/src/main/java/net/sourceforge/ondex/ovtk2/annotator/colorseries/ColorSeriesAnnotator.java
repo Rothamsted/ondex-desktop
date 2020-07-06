@@ -230,8 +230,7 @@ public class ColorSeriesAnnotator extends OVTK2Annotator implements
 
 		// trigger re-draw
 		viewer.updateViewer(null);
-		viewer.getVisualizationViewer().getModel().fireStateChanged();
-		viewer.getVisualizationViewer().updateUI();
+		viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();viewer.getVisualizationViewer().getComponent().updateUI();
 
 		used = true;
 	}

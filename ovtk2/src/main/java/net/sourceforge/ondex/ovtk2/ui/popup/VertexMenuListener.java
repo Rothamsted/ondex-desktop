@@ -1,6 +1,6 @@
 package net.sourceforge.ondex.ovtk2.ui.popup;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
+import org.jungrapht.visualization.VisualizationViewer;
 
 /**
  * Used to indicate that this class wishes to be told of a selected vertex along

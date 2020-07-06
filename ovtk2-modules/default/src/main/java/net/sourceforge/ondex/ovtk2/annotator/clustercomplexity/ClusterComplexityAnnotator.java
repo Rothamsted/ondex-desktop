@@ -27,7 +27,6 @@ import javax.swing.event.InternalFrameListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import net.sourceforge.ondex.algorithm.entropy.ShannonEntropy;
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.AttributeName;
@@ -47,6 +46,8 @@ import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
 import net.sourceforge.ondex.ovtk2.util.VisualisationUtils;
 import net.sourceforge.ondex.ovtk2.util.listmodel.AttributeNameListModel;
 import net.sourceforge.ondex.ovtk2.util.renderer.CustomCellRenderer;
+import org.jungrapht.visualization.selection.MutableSelectedState;
+import org.jungrapht.visualization.selection.SelectedState;
 
 /**
  * Identifies all maximal cliques in a graph and ranks them according to their
@@ -173,7 +174,7 @@ public class ClusterComplexityAnnotator extends OVTK2Annotator implements
 			an = graph.getMetaData().getAttributeName(attNameName);
 
 			// find all cliques in graph
-			BronKerboschCliqueFinder<ONDEXConcept, ONDEXRelation> bkcf = new BronKerboschCliqueFinder<ONDEXConcept, ONDEXRelation>(
+			BronKerboschCliqueFinder<ONDEXConcept, ONDEXRelation> bkcf = new BronKerboschCliqueFinder<>(
 					this.graph);
 			cliques = new ArrayList<Set<ONDEXConcept>>(); // as a list
 			for (Set<ONDEXConcept> clique : bkcf.getAllMaximalCliques()) {
@@ -278,8 +279,8 @@ public class ClusterComplexityAnnotator extends OVTK2Annotator implements
 		ListSelectionModel lsm = (ListSelectionModel) e.getSource();
 
 		// get pick state from viewer
-		PickedState<ONDEXConcept> state = viewer.getVisualizationViewer()
-				.getPickedVertexState();
+		MutableSelectedState<ONDEXConcept> state = viewer.getVisualizationViewer()
+				.getSelectedVertexState();
 		state.clear();
 
 		if (!lsm.isSelectionEmpty()) {
@@ -294,12 +295,12 @@ public class ClusterComplexityAnnotator extends OVTK2Annotator implements
 					// pick nodes in clique
 					Set<ONDEXConcept> clique = cliques.get(selection);
 					for (ONDEXConcept n : clique) {
-						state.pick(n, true);
+						state.select(n, true);
 					}
 				}
 			}
 
-			if (state.getPicked().size() > 1 && viewer instanceof OVTK2Viewer)
+			if (state.getSelected().size() > 1 && viewer instanceof OVTK2Viewer)
 				// zooming into
 				VisualisationUtils.zoomIn((OVTK2Viewer) viewer);
 		}

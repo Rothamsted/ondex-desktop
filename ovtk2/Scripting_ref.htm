@@ -1,0 +1,7545 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+<TITLE></TITLE>
+<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Win32)">
+<META NAME="AUTHOR" CONTENT="a Z">
+<META NAME="CREATED" CONTENT="20080216;18360837">
+<META NAME="CHANGEDBY" CONTENT="a Z">
+<META NAME="CHANGED" CONTENT="20080216;18574537">
+<STYLE TYPE="text/css">
+<!--
+@page { size: 21cm 29.7cm; margin: 2cm }
+P { margin-bottom: 0.21cm }
+TD P { margin-bottom: 0cm }
+-->
+</STYLE>
+</HEAD>
+<BODY LANG="en-GB" DIR="LTR">
+<P ALIGN=JUSTIFY><FONT FACE="Calibri"><FONT SIZE=6 STYLE="font-size: 26pt"><B>ONDEX/OVTK
+scripting reference</B></FONT></FONT></P>
+<body lang=EN-GB link=blue vlink=purple>
+<div class=Section1>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'>Author: Artem Lysenko, artem.lysenko_at_rothamsted.ac.uk</p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'>Ondex scripting
+engine allows flexible manipulation of graphs and annotation at run-time and is
+implemented in JavaScript. More information about Javascript syntax and data
+types can be found on the following sites:</span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'><a
+href="http://en.wikipedia.org/wiki/JavaScript">http://en.wikipedia.org/wiki/JavaScript</a></span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'><a
+href="http://en.wikipedia.org/wiki/JavaScript_syntax">http://en.wikipedia.org/wiki/JavaScript_syntax</a></span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'><a
+href="http://www.crockford.com/javascript/javascript.html">http://www.crockford.com/javascript/javascript.html</a></span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'>A useful guide
+about the differences between JavaScript and Java:</span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'><a
+href="http://peter.michaux.ca/article/5004">http://peter.michaux.ca/article/5004</a></span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'>It is
+backed by the Mozilla Rhino scripting engine that allows native Java classes to
+be used alongside JavaSctript objects. For more information about Rhino-specific
+features and how to use them please refer to their website: <a
+href="http://www.mozilla.org/rhino/">http://www.mozilla.org/rhino/</a>.</span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'>All of
+the necessary functions and objects needed to access data elements, graph and attributes
+of concepts and relations can be accessed via scripting interface. In OVTK all commands
+work on the graph associated with the currently selected viewer.</span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'>At the
+moment all of the ONDEX data types are wrapped in a standardised way all of
+the getters with no argument and setter that take one argument become properties
+in JavaScript representation and can be used with assignment operator '=' to
+write and read from them. All other methods become functions and are used with
+a standard Java notation e.g. fn(arg0, arg1, arg2). There are also convenience
+methods added that allow terms of controlled vocabulary, like accessions,
+attribute names, etc. to be supplied as a string as well as an original data
+type. For example to get concept Attribute: concept</span><span style='font-size:
+11.0pt;font-family:Calibri;color:black'>.getConceptGDS</span><span
+style='font-size:11.0pt;font-family:Calibri;color:black'>("TAXID"</span><span
+style='font-size:11.0pt;font-family:Calibri'>). Internally the strings are resolved
+against the metadata as per norm. When testing new Java code in OVTK, it can be
+made into a new global function by adding it as a static method to <i>net.sourceforge.ondex.ovtk2.ui.scripting.OVTK2CustomFunctions
+</i>class.</span></p>
+<p class=MsoNormal><span style='font-size:11.0pt;font-family:Calibri'>Here is
+the list of all currently supported options and how they can be called from the
+scripting interface. For the full documentation of what particular methods do
+please refer to the ONDEX/OVTK JavaDoc and look for the original methods/classes
+that back the JavaScript representation. If you add new features and need to
+regenerate the documentation, delete 'Scripting_ref.htm' (this file) to have it
+regenerated with the new information included.</span></p>
+</div><TABLE WIDTH=90% BORDER=0 CELLPADDING=5 CELLSPACING=0>
+<COL WIDTH=20*>
+<COL WIDTH=20*>
+<COL WIDTH=20*>
+<COL WIDTH=70*><FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Global functions'>Global functions</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Metadata'>Metadata</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Attribute'>Attribute</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Graph'>Graph</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#DelimitedFileReader'>DelimitedFileReader</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#AttributeName'>AttributeName</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#ConceptName'>ConceptName</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Accession'>Accession</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#DataReader'>DataReader</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#RKey'>RKey</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#AttributePrototype'>AttributePrototype</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Concept'>Concept</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#ConceptPrototype'>ConceptPrototype</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#PathParser'>PathParser</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#DataSource'>DataSource</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#ConceptClass'>ConceptClass</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Relation'>Relation</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#View'>View</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Type'>Type</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#RelationPrototype'>RelationPrototype</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Subgraph'>Subgraph</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Evidence'>Evidence</a></B></I></FONT></FONT><BR/>
+<FONT FACE="Calibri"><FONT SIZE=3><I><B>
+<a href='#Unit'>Unit</a></B></I></FONT></FONT><BR/>
+<TR>
+<TD COLSPAN=4 WIDTH=100% VALIGN=TOP>
+<a name='Global functions'><P><FONT FACE="Calibri"><FONT SIZE=6 STYLE="font-size: 22pt"><B>
+Global functions</B></FONT></FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='boolean 
+isValidRegex(java.lang.String)'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+boolean 
+isValidRegex(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+public static final boolean net.sourceforge.ondex.ovtk2.reusable_functions.Filter.isValidRegex(java.lang.String)</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='void 
+BlendOnColorScale()'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+void 
+BlendOnColorScale()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+public static final void net.sourceforge.ondex.ovtk2.reusable_functions.Annotation.BlendOnColorScale()</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='java.awt.Color 
+getColorRatio(java.awt.Color,java.awt.Color,double)'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+java.awt.Color 
+getColorRatio(java.awt.Color,java.awt.Color,double)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+public static final java.awt.Color net.sourceforge.ondex.ovtk2.reusable_functions.Annotation.getColorRatio(java.awt.Color,java.awt.Color,double)</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='java.awt.Color 
+getRainbowColor(double)'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+java.awt.Color 
+getRainbowColor(double)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+public static final java.awt.Color net.sourceforge.ondex.ovtk2.reusable_functions.Annotation.getRainbowColor(double)</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='double[] 
+findMinMaxInSet(java.util.Collection)'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+double[] 
+findMinMaxInSet(java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+public static final double[] net.sourceforge.ondex.ovtk2.reusable_functions.Annotation.findMinMaxInSet(java.util.Collection)</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='void 
+closeViewer(net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer)'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+void 
+closeViewer(net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+public static void net.sourceforge.ondex.ovtk2.ui.console.functions.CommonFuntions.closeViewer(net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer)</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='void 
+openGraph(java.lang.String)'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+void 
+openGraph(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+public static void net.sourceforge.ondex.ovtk2.ui.console.functions.CommonFuntions.openGraph(java.lang.String) throws net.sourceforge.ondex.scripting.FunctionException</FONT></P>
+</a></TD>
+</TR><TR>
+<TD COLSPAN=4 WIDTH=100% VALIGN=TOP>
+<a name='Data structures'><P><FONT FACE="Calibri"><FONT SIZE=6 STYLE="font-size: 22pt"><B>
+Data structures</B></FONT></FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Metadata'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Metadata</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.ONDEXGraphMetaData</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteDataSource(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.deleteDataSource(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.DataSource createDataSource(java.lang.String,java.lang.String,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.DataSource net.sourceforge.ondex.core.ONDEXGraphMetaData.createDataSource(java.lang.String,java.lang.String,java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.AttributeName createAttributeName(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Class,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.AttributeName net.sourceforge.ondex.core.ONDEXGraphMetaData.createAttributeName(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.core.Unit,java.lang.Class,net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteConceptClass(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.deleteConceptClass(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.ConceptClass getConceptClass(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ConceptClass net.sourceforge.ondex.core.ONDEXGraphMetaData.getConceptClass(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean checkRelationType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.checkRelationType(java.lang.String) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.ConceptClass createConceptClass(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.scripted.ConceptClass)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ConceptClass net.sourceforge.ondex.core.ONDEXGraphMetaData.createConceptClass(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.core.ConceptClass) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Unit createUnit(java.lang.String,java.lang.String,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.Unit net.sourceforge.ondex.core.ONDEXGraphMetaData.createUnit(java.lang.String,java.lang.String,java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.DataSource getDataSource(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.DataSource net.sourceforge.ondex.core.ONDEXGraphMetaData.getDataSource(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Type createRelationType(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,boolean,boolean,boolean,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.RelationType net.sourceforge.ondex.core.ONDEXGraphMetaData.createRelationType(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,boolean,boolean,boolean,net.sourceforge.ondex.core.RelationType) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteUnit(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.deleteUnit(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean checkDataSource(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.checkDataSource(java.lang.String) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Evidence getEvidenceType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.EvidenceType net.sourceforge.ondex.core.ONDEXGraphMetaData.getEvidenceType(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptClasses()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean checkConceptClass(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.checkConceptClass(java.lang.String) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteAttributeName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.deleteAttributeName(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean checkUnit(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.checkUnit(java.lang.String) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void associateGraph(net.sourceforge.ondex.scripted.Graph)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract void net.sourceforge.ondex.core.ONDEXGraphMetaData.associateGraph(net.sourceforge.ondex.core.ONDEXGraph) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.ConceptClass createConceptClass(java.lang.String,java.lang.String,java.lang.String,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ConceptClass net.sourceforge.ondex.core.ONDEXGraphMetaData.createConceptClass(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.core.ConceptClass) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean checkAttributeName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.checkAttributeName(java.lang.String) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.AttributeName getAttributeName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.AttributeName net.sourceforge.ondex.core.ONDEXGraphMetaData.getAttributeName(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getDataSources()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteRelationType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.deleteRelationType(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationTypes()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean checkEvidenceType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.checkEvidenceType(java.lang.String) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteEvidenceType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraphMetaData.deleteEvidenceType(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.AttributeName createAttributeName(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.scripted.Unit,java.lang.Class,net.sourceforge.ondex.scripted.AttributeName)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.AttributeName net.sourceforge.ondex.core.ONDEXGraphMetaData.createAttributeName(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.core.Unit,java.lang.Class,net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Evidence createEvidenceType(java.lang.String,java.lang.String,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.EvidenceType net.sourceforge.ondex.core.ONDEXGraphMetaData.createEvidenceType(java.lang.String,java.lang.String,java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getUnits()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getAttributeNames()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.core.MetaDataFactory getFactory()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Unit getUnit(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.Unit net.sourceforge.ondex.core.ONDEXGraphMetaData.getUnit(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Type getRelationType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.RelationType net.sourceforge.ondex.core.ONDEXGraphMetaData.getRelationType(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getEvidenceTypes()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Type createRelationType(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,boolean,boolean,boolean,net.sourceforge.ondex.scripted.Type)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.RelationType net.sourceforge.ondex.core.ONDEXGraphMetaData.createRelationType(java.lang.String,java.lang.String,java.lang.String,java.lang.String,boolean,boolean,boolean,boolean,net.sourceforge.ondex.core.RelationType) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException,net.sourceforge.ondex.exception.type.WrongParameterException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+long getSID()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Attribute'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Attribute</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.Attribute</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDoIndex(boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isDoIndex()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.Attribute.isDoIndex() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean inheritedFrom(net.sourceforge.ondex.core.Hierarchy)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.Instantiation.inheritedFrom(net.sourceforge.ondex.core.Hierarchy) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setValue(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Class getOwnerClass()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.core.Hierarchy getOfType()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int getOwnerId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object getValue()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Graph'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Graph</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.ONDEXGraph</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfEvidenceType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfConcept(net.sourceforge.ondex.scripted.Concept)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfConcept(net.sourceforge.ondex.core.ONDEXConcept) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfTag(net.sourceforge.ondex.scripted.Concept)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfTag(net.sourceforge.ondex.core.ONDEXConcept) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation getRelation(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Concept,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.core.ONDEXGraph.getRelation(int) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfEvidenceType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfRelationType(net.sourceforge.ondex.scripted.Type)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfRelationType(net.sourceforge.ondex.core.RelationType) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfEvidenceType(net.sourceforge.ondex.scripted.Evidence)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfConceptClass(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfConceptClass(net.sourceforge.ondex.core.ConceptClass) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation getRelation(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Type)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.core.ONDEXGraph.getRelation(int) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Concept getConcept(int)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXConcept net.sourceforge.ondex.core.ONDEXGraph.getConcept(int) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfConceptClass(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfConceptClass(net.sourceforge.ondex.core.ConceptClass) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation createRelation(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Type,java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.core.ONDEXGraph.createRelation(net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.RelationType,java.util.Collection) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteRelation(int)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraph.deleteRelation(net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.RelationType) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Concept createConcept(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.scripted.DataSource,net.sourceforge.ondex.scripted.ConceptClass,java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXConcept net.sourceforge.ondex.core.ONDEXGraph.createConcept(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.core.DataSource,net.sourceforge.ondex.core.ConceptClass,java.util.Collection) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.core.EntityFactory getFactory()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfConceptClass(net.sourceforge.ondex.scripted.ConceptClass)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfConceptClass(net.sourceforge.ondex.core.ConceptClass) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfAttributeName(net.sourceforge.ondex.scripted.AttributeName)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfAttributeName(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfAttributeName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfAttributeName(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Concept createConcept(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXConcept net.sourceforge.ondex.core.ONDEXGraph.createConcept(java.lang.String,java.lang.String,java.lang.String,net.sourceforge.ondex.core.DataSource,net.sourceforge.ondex.core.ConceptClass,java.util.Collection) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteRelation(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Type)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraph.deleteRelation(net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.RelationType) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfDataSource(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfDataSource(net.sourceforge.ondex.core.DataSource) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isReadOnly()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraph.isReadOnly() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getAllTags()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConcepts()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfDataSource(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfDataSource(net.sourceforge.ondex.core.DataSource) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfAttributeName(net.sourceforge.ondex.scripted.AttributeName)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfAttributeName(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteConcept(int)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraph.deleteConcept(int) throws java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteRelation(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Concept,java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ONDEXGraph.deleteRelation(net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.RelationType) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelations()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfTag(net.sourceforge.ondex.scripted.Concept)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfTag(net.sourceforge.ondex.core.ONDEXConcept) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation createRelation(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Concept,java.lang.String,java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.core.ONDEXGraph.createRelation(net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.ONDEXConcept,net.sourceforge.ondex.core.RelationType,java.util.Collection) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfEvidenceType(net.sourceforge.ondex.scripted.Evidence)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfConceptClass(net.sourceforge.ondex.scripted.ConceptClass)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfConceptClass(net.sourceforge.ondex.core.ConceptClass) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation getRelation(int)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.core.ONDEXGraph.getRelation(int) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfAttributeName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfAttributeName(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptsOfDataSource(net.sourceforge.ondex.scripted.DataSource)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getConceptsOfDataSource(net.sourceforge.ondex.core.DataSource) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Metadata getMetaData()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfDataSource(net.sourceforge.ondex.scripted.DataSource)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfDataSource(net.sourceforge.ondex.core.DataSource) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getRelationsOfRelationType(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Set net.sourceforge.ondex.core.ONDEXGraph.getRelationsOfRelationType(net.sourceforge.ondex.core.RelationType) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='DelimitedFileReader'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+DelimitedFileReader</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.tools.tab.importer.DelimitedReader</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='AttributeName'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+AttributeName</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.AttributeName</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDescription()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Class getDataType()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setFullname(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Unit getUnit()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.core.base.AbstractONDEXGraphMetaData getEmbAbstractONDEXGraphMetaData()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setEmbAbstractONDEXGraphMetaData(net.sourceforge.ondex.core.base.AbstractONDEXGraphMetaData)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getFullname()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDataTypeAsString()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object getSpecialisationOf()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDescription(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.Hierarchy.isAssignableTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableFrom(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.Hierarchy.isAssignableFrom(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setSpecialisationOf(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setUnit(net.sourceforge.ondex.scripted.Unit)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='ConceptName'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+ConceptName</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.ConceptName</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isPreferred()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ConceptName.isPreferred() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setPreferred(boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int getOwnerId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Accession'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Accession</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.ConceptAccession</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAmbiguous()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.ConceptAccession.isAmbiguous() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setAmbiguous(boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getAccession()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int getOwnerId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.DataSource getElementOf()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='DataReader'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+DataReader</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.tools.tab.importer.DataReader</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void reset()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract void net.sourceforge.ondex.tools.tab.importer.DataReader.reset() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isOpen()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.tools.tab.importer.DataReader.isOpen() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean hasNext()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.tools.tab.importer.DataReader.hasNext() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setLastLine(int)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setLine(int)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void close()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract void net.sourceforge.ondex.tools.tab.importer.DataReader.close() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='RKey'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+RKey</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.RelationKey</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int getToID()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int getFromID()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getRtId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='AttributePrototype'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+AttributePrototype</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.tools.subgraph.AttributePrototype</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Concept'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Concept</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.base.AbstractConcept</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.ConceptClass getOfType()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.ConceptName getConceptName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ConceptName net.sourceforge.ondex.core.base.AbstractConcept.getConceptName(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.ConceptName createConceptName(java.lang.String,boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ConceptName net.sourceforge.ondex.core.base.AbstractConcept.createConceptName(java.lang.String,boolean) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptAccessions()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void addEvidenceType(net.sourceforge.ondex.scripted.Evidence)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public void net.sourceforge.ondex.core.base.AbstractConcept.addEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Accession getConceptAccession(java.lang.String,net.sourceforge.ondex.scripted.DataSource)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ConceptAccession net.sourceforge.ondex.core.base.AbstractConcept.getConceptAccession(java.lang.String,net.sourceforge.ondex.core.DataSource) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setEmbAbstractONDEXGraphMetaData(net.sourceforge.ondex.core.base.AbstractONDEXGraphMetaData)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getConceptNames()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDescription(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean removeTag(net.sourceforge.ondex.scripted.Concept)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractConcept.removeTag(net.sourceforge.ondex.core.ONDEXConcept) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.ConceptName getConceptName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ConceptName net.sourceforge.ondex.core.base.AbstractConcept.getConceptName(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setPID(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.DataSource getElementOf()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Attribute getAttribute(net.sourceforge.ondex.scripted.AttributeName)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.Attribute net.sourceforge.ondex.core.base.AbstractConcept.getAttribute(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void addTag(net.sourceforge.ondex.scripted.Concept)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public void net.sourceforge.ondex.core.base.AbstractConcept.addTag(net.sourceforge.ondex.core.ONDEXConcept) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDescription()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getPID()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.core.base.AbstractONDEXGraphMetaData getEmbAbstractONDEXGraphMetaData()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean removeEvidenceType(net.sourceforge.ondex.scripted.Evidence)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractConcept.removeEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean inheritedFrom(net.sourceforge.ondex.core.Hierarchy)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractConcept.inheritedFrom(net.sourceforge.ondex.core.Hierarchy) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getAnnotation()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteAttribute(net.sourceforge.ondex.scripted.AttributeName)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractConcept.deleteAttribute(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getAttributes()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteConceptName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractConcept.deleteConceptName(java.lang.String) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getTags()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getEvidence()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Accession createConceptAccession(java.lang.String,net.sourceforge.ondex.scripted.DataSource,boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ConceptAccession net.sourceforge.ondex.core.base.AbstractConcept.createConceptAccession(java.lang.String,net.sourceforge.ondex.core.DataSource,boolean) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteConceptAccession(java.lang.String,net.sourceforge.ondex.scripted.DataSource)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractConcept.deleteConceptAccession(java.lang.String,net.sourceforge.ondex.core.DataSource) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Accession acc(java.lang.String,net.sourceforge.ondex.scripted.DataSource,boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setAnnotation(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Attribute createAttribute(net.sourceforge.ondex.scripted.AttributeName,java.lang.Object,boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.Attribute net.sourceforge.ondex.core.base.AbstractConcept.createAttribute(net.sourceforge.ondex.core.AttributeName,java.lang.Object,boolean) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean inheritedFrom(net.sourceforge.ondex.scripted.ConceptClass)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractConcept.inheritedFrom(net.sourceforge.ondex.core.Hierarchy) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='ConceptPrototype'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+ConceptPrototype</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.tools.subgraph.ConceptPrototype</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Concept getValue()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void addAttributes(net.sourceforge.ondex.scripted.AttributePrototype[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public void net.sourceforge.ondex.tools.subgraph.ConceptPrototype.addAttributes(net.sourceforge.ondex.tools.subgraph.AttributePrototype[]) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Concept parse(java.lang.String[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ONDEXConcept net.sourceforge.ondex.tools.subgraph.ConceptPrototype.parse(java.lang.String[]) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.AccessDeniedException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='PathParser'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+PathParser</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.tools.tab.importer.PathParser</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='DataSource'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+DataSource</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.DataSource</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDescription()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setFullname(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDescription(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getFullname()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='ConceptClass'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+ConceptClass</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.ConceptClass</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDescription()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setFullname(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableFrom(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default boolean net.sourceforge.ondex.core.ConceptClass.isAssignableFrom(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getFullname()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableFrom(net.sourceforge.ondex.scripted.ConceptClass)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default boolean net.sourceforge.ondex.core.ConceptClass.isAssignableFrom(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object getSpecialisationOf()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDescription(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.Hierarchy.isAssignableTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableFrom(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default boolean net.sourceforge.ondex.core.ConceptClass.isAssignableFrom(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setSpecialisationOf(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Relation'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Relation</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.base.AbstractRelation</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void addTag(net.sourceforge.ondex.scripted.Concept)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public void net.sourceforge.ondex.core.base.AbstractRelation.addTag(net.sourceforge.ondex.core.ONDEXConcept) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Type getOfType()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Concept getToConcept()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.RKey getKey()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Concept getFromConcept()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.core.base.AbstractONDEXGraphMetaData getEmbAbstractONDEXGraphMetaData()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean removeEvidenceType(net.sourceforge.ondex.scripted.Evidence)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractRelation.removeEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void addEvidenceType(net.sourceforge.ondex.scripted.Evidence)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public void net.sourceforge.ondex.core.base.AbstractRelation.addEvidenceType(net.sourceforge.ondex.core.EvidenceType) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setEmbAbstractONDEXGraphMetaData(net.sourceforge.ondex.core.base.AbstractONDEXGraphMetaData)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean inheritedFrom(net.sourceforge.ondex.core.Hierarchy)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractRelation.inheritedFrom(net.sourceforge.ondex.core.Hierarchy) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean deleteAttribute(net.sourceforge.ondex.scripted.AttributeName)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractRelation.deleteAttribute(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getAttributes()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean removeTag(net.sourceforge.ondex.scripted.Concept)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractRelation.removeTag(net.sourceforge.ondex.core.ONDEXConcept) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getTags()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean inheritedFrom(net.sourceforge.ondex.scripted.Type)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public boolean net.sourceforge.ondex.core.base.AbstractRelation.inheritedFrom(net.sourceforge.ondex.core.Hierarchy) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View getEvidence()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Attribute getAttribute(net.sourceforge.ondex.scripted.AttributeName)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.Attribute net.sourceforge.ondex.core.base.AbstractRelation.getAttribute(net.sourceforge.ondex.core.AttributeName) throws net.sourceforge.ondex.exception.type.NullValueException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Attribute createAttribute(net.sourceforge.ondex.scripted.AttributeName,java.lang.Object,boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.Attribute net.sourceforge.ondex.core.base.AbstractRelation.createAttribute(net.sourceforge.ondex.core.AttributeName,java.lang.Object,boolean) throws net.sourceforge.ondex.exception.type.NullValueException,java.lang.UnsupportedOperationException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='View'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+View</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+java.util.Set</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View copyOf(java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.copyOf(java.util.Collection) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void forEach(java.util.function.Consumer)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default void java.lang.Iterable.forEach(java.util.function.Consumer) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean removeIf(java.util.function.Predicate)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default boolean java.util.Collection.removeIf(java.util.function.Predicate) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int size()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.util.Set.size() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean addAll(java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.addAll(java.util.Collection) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isEmpty()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.isEmpty() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.util.Iterator iterator()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract java.util.Iterator java.util.Set.iterator() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void clear()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract void java.util.Set.clear() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.util.stream.Stream parallelStream()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default java.util.stream.Stream java.util.Collection.parallelStream() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean retainAll(java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.retainAll(java.util.Collection) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.util.stream.Stream stream.Stream net.sourceforge.ondex.scripted.View.stream()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default java.util.stream.Stream java.util.Collection.stream() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean removeAll(java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.removeAll(java.util.Collection) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean add(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.add(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.util.Spliterator spliterator()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public default java.util.Spliterator java.util.Set.spliterator() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean remove(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.remove(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean containsAll(java.util.Collection)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.containsAll(java.util.Collection) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean contains(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean java.util.Set.contains(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.View of(java.lang.Object,java.lang.Object,java.lang.Object,java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public static java.util.Set java.util.Set.of(java.lang.Object,java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Type'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Type</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.RelationType</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDescription()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setFullname(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setSymmetric(boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isTransitiv()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.RelationType.isTransitiv() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setReflexive(boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setTransitiv(boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isSymmetric()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.RelationType.isSymmetric() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getFullname()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setAntisymmetric(boolean)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAntisymmetric()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.RelationType.isAntisymmetric() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getInverseName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setInverseName(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object getSpecialisationOf()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDescription(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.Hierarchy.isAssignableTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isAssignableFrom(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.Hierarchy.isAssignableFrom(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setSpecialisationOf(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+boolean isReflexive()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract boolean net.sourceforge.ondex.core.RelationType.isReflexive() 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='RelationPrototype'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+RelationPrototype</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.tools.subgraph.RelationPrototype</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation getValue()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void addAttributes(net.sourceforge.ondex.scripted.AttributePrototype[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public void net.sourceforge.ondex.tools.subgraph.RelationPrototype.addAttributes(net.sourceforge.ondex.tools.subgraph.AttributePrototype[]) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation parse(net.sourceforge.ondex.scripted.ConceptPrototype,net.sourceforge.ondex.scripted.Concept,java.lang.String[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.tools.subgraph.RelationPrototype.parse(net.sourceforge.ondex.tools.subgraph.ConceptPrototype,net.sourceforge.ondex.tools.subgraph.ConceptPrototype,java.lang.String[]) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation parse(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.ConceptPrototype,java.lang.String[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.tools.subgraph.RelationPrototype.parse(net.sourceforge.ondex.tools.subgraph.ConceptPrototype,net.sourceforge.ondex.tools.subgraph.ConceptPrototype,java.lang.String[]) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation parse(net.sourceforge.ondex.scripted.ConceptPrototype,net.sourceforge.ondex.scripted.ConceptPrototype,java.lang.String[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.tools.subgraph.RelationPrototype.parse(net.sourceforge.ondex.tools.subgraph.ConceptPrototype,net.sourceforge.ondex.tools.subgraph.ConceptPrototype,java.lang.String[]) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+net.sourceforge.ondex.scripted.Relation parse(net.sourceforge.ondex.scripted.Concept,net.sourceforge.ondex.scripted.Concept,java.lang.String[])</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public net.sourceforge.ondex.core.ONDEXRelation net.sourceforge.ondex.tools.subgraph.RelationPrototype.parse(net.sourceforge.ondex.tools.subgraph.ConceptPrototype,net.sourceforge.ondex.tools.subgraph.ConceptPrototype,java.lang.String[]) throws net.sourceforge.ondex.exception.type.NullValueException,net.sourceforge.ondex.exception.type.EmptyStringException 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Subgraph'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Subgraph</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.tools.subgraph.Subgraph</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Evidence'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Evidence</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.EvidenceType</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDescription()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setFullname(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDescription(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getFullname()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=3 WIDTH=90%>
+<a name='Unit'><P><FONT FACE="Calibri"><FONT SIZE=5><B>
+Unit</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: 
+net.sourceforge.ondex.core.Unit</FONT></P>
+</a></TD>
+</TR><TR VALIGN=BOTTOM>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=2 WIDTH=80%>
+<P><FONT FACE="Calibri"><FONT SIZE=4 STYLE="font-size: 16pt"><I><B>
+Methods</B></I></FONT></FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getDescription()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setBase(java.util.Map)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setFullname(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.Object unwrap()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void setDescription(java.lang.String)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+void wrap(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getClassName()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getId()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+int compareTo(java.lang.Object)</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+Backed by: public abstract int java.lang.Comparable.compareTo(java.lang.Object) 
+</FONT></P>
+</TD>
+</TR><TR VALIGN=MIDDLE>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=10%>
+<P><BR>
+</P>
+</TD>
+<TD COLSPAN=1 WIDTH=70%>
+<P><FONT FACE="Calibri"><FONT SIZE=3><B>
+java.lang.String getFullname()</B></FONT></FONT><BR/>
+<FONT FACE="Calibri">
+</FONT></P>
+</TD>
+</TR></TABLE>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+</BODY>
+</HTML>

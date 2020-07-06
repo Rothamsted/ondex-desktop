@@ -4,16 +4,13 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.map.LazyMap;
-
-import edu.uci.ics.jung.visualization.picking.PickedInfo;
 import net.sourceforge.ondex.core.EvidenceType;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.graph.custom.MultiColorNodePaint;
+import org.jungrapht.visualization.selection.SelectedState;
 
 /**
  * Provides a transformation from a given ONDEXConcept to a Color.
@@ -21,7 +18,7 @@ import net.sourceforge.ondex.ovtk2.graph.custom.MultiColorNodePaint;
  * @author taubertj
  * @author Matthew Pocock
  */
-public class ONDEXNodeFillPaint implements Transformer<ONDEXConcept, Paint> {
+public class ONDEXNodeFillPaint implements Function<ONDEXConcept, Paint> {
 
 	public static final String ET = "et";
 
@@ -54,7 +51,7 @@ public class ONDEXNodeFillPaint implements Transformer<ONDEXConcept, Paint> {
 	/**
 	 * current PickedInfo
 	 */
-	private final PickedInfo<ONDEXConcept> pi;
+	private final SelectedState<ONDEXConcept> pi;
 
 	/**
 	 * current colour selection
@@ -67,22 +64,12 @@ public class ONDEXNodeFillPaint implements Transformer<ONDEXConcept, Paint> {
 	 * @param pi
 	 *            PickedInfo<ONDEXNode>
 	 */
-	public ONDEXNodeFillPaint(PickedInfo<ONDEXConcept> pi) {
+	public ONDEXNodeFillPaint(SelectedState<ONDEXConcept> pi) {
 		if (pi == null)
 			throw new IllegalArgumentException("PickedInfo instance must be non-null");
 		this.pi = pi;
-		this.colors = LazyMap.decorate(new HashMap<ONDEXConcept, Paint>(), new Factory<Paint>() {
-			@Override
-			public Paint create() {
-				return Config.defaultColor;
-			}
-		});
-		this.alphas = LazyMap.decorate(new HashMap<ONDEXConcept, Integer>(), new Factory<Integer>() {
-			@Override
-			public Integer create() {
-				return 255;
-			}
-		});
+		this.colors = new HashMap<>();//LazyMap.decorate(new HashMap<ONDEXConcept, Paint>(), new Factory<Paint>() {
+		this.alphas = new HashMap<>();
 
 		// get colouring strategy from visual.xml
 		String s = Config.visual.getProperty(GRAPH_COLORING_CONCEPT_STRATEGY);
@@ -135,13 +122,14 @@ public class ONDEXNodeFillPaint implements Transformer<ONDEXConcept, Paint> {
 	 *            ONDEXConcept
 	 * @return Color
 	 */
-	public Paint transform(ONDEXConcept node) {
-		if (pi.isPicked(node)) {
+	@Override
+	public Paint apply(ONDEXConcept node) {
+		if (pi.isSelected(node)) {
 			return Config.nodePickedColor;
 		} else {
 			if (!colors.containsKey(node))
 				updateColor(node);
-			return colors.get(node);
+			return colors.getOrDefault(node, Config.defaultColor);
 		}
 	}
 
@@ -153,7 +141,7 @@ public class ONDEXNodeFillPaint implements Transformer<ONDEXConcept, Paint> {
 	 */
 	public Integer transformAlpha(ONDEXConcept node) {
 		if (alphas.containsKey(node))
-			return alphas.get(node);
+			return alphas.getOrDefault(node, 255);
 		else
 			return null;
 	}

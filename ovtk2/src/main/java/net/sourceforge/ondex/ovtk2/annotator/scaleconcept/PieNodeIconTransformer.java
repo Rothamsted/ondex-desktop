@@ -1,13 +1,11 @@
 package net.sourceforge.ondex.ovtk2.annotator.scaleconcept;
 
+import net.sourceforge.ondex.core.ONDEXConcept;
+
+import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.Icon;
-
-import org.apache.commons.collections15.Transformer;
-
-import net.sourceforge.ondex.core.ONDEXConcept;
+import java.util.function.Function;
 
 /**
  * A node shape which displays data as a pie chart. This is the 2D data
@@ -16,7 +14,7 @@ import net.sourceforge.ondex.core.ONDEXConcept;
  * @author taubertj
  * @version 21.05.2008
  */
-public class PieNodeIconTransformer implements Transformer<ONDEXConcept, Icon> {
+public class PieNodeIconTransformer implements Function<ONDEXConcept, Icon> {
 
 	/**
 	 * original data
@@ -185,7 +183,7 @@ public class PieNodeIconTransformer implements Transformer<ONDEXConcept, Icon> {
 	}
 
 	@Override
-	public Icon transform(ONDEXConcept input) {
+	public Icon apply(ONDEXConcept input) {
 		// lazy initialisation of icon map
 		if (!iconMap.containsKey(input)) {
 			PieIcon icon = new PieIcon(input, normalized, data, significanceMap, normalizedSignificanceMap);

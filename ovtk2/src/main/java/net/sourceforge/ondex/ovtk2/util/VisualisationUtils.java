@@ -5,13 +5,6 @@ import java.awt.geom.Point2D;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.algorithms.layout.util.VisRunner;
-import edu.uci.ics.jung.algorithms.util.IterativeContext;
-import edu.uci.ics.jung.visualization.Layer;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.layout.LayoutTransition;
-import edu.uci.ics.jung.visualization.layout.ObservableCachingLayout;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.layout.OVTK2Layouter;
@@ -20,6 +13,16 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
 import net.sourceforge.ondex.ovtk2.ui.mouse.OVTK2GraphMouse;
 import net.sourceforge.ondex.tools.threading.monitoring.IndeterminateProcessAdapter;
 import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.jungrapht.visualization.MultiLayerTransformer;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.layout.algorithms.LayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.LayoutAlgorithmTransition;
+import org.jungrapht.visualization.layout.algorithms.util.IterativeContext;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
+import org.jungrapht.visualization.layout.util.VisRunnable;
+
+import static org.jungrapht.visualization.MultiLayerTransformer.*;
 
 /**
  * Utility functions mainly used to influence visualisation.
@@ -32,7 +35,7 @@ public class VisualisationUtils {
 	/**
 	 * Dirty hack so that centring can be done after layout is ready.
 	 */
-	public static class MyVisRunner extends VisRunner {
+	public static class MyVisRunner extends VisRunnable {
 
 		/**
 		 * viewer.
@@ -55,7 +58,7 @@ public class VisualisationUtils {
 		/**
 		 * hacked run method.
 		 * 
-		 * @see edu.uci.ics.jung.algorithms.layout.util.VisRunner#run()
+//		 * @see edu.uci.ics.jung.algorithms.layout.util.VisRunner#run()
 		 */
 		public void run() {
 			super.run();
@@ -72,12 +75,15 @@ public class VisualisationUtils {
 	 */
 	public static void relayout(final OVTK2PropertiesAggregator viewer, final Frame parent) {
 
+		LayoutModel<ONDEXConcept> layoutModel = viewer.getVisualizationViewer().getVisualizationModel().getLayoutModel();
+		LayoutAlgorithm<ONDEXConcept> layoutAlgorithm = viewer.getVisualizationViewer().getVisualizationModel().getLayoutAlgorithm();
+
 		// get current layout
-		ObservableCachingLayout<ONDEXConcept, ONDEXRelation> layout = (ObservableCachingLayout<ONDEXConcept, ONDEXRelation>) viewer.getVisualizationViewer().getGraphLayout();
+//		ObservableCachingLayout<ONDEXConcept, ONDEXRelation> layout = (ObservableCachingLayout<ONDEXConcept, ONDEXRelation>) viewer.getVisualizationViewer().getGraphLayout();
 
 		// reuse current layouter
-		if (layout.getDelegate() instanceof OVTK2Layouter) {
-			final OVTK2Layouter layouter = (OVTK2Layouter) layout.getDelegate();
+		if (layoutAlgorithm instanceof OVTK2Layouter) {
+			final OVTK2Layouter layouter = (OVTK2Layouter) layoutAlgorithm;
 
 			if (layouter instanceof Monitorable) {
 				// layout knows about its progress
@@ -103,7 +109,8 @@ public class VisualisationUtils {
 				p.start();
 			}
 		} else {
-			layout.getDelegate().reset();
+			layoutAlgorithm.visit(layoutModel);
+//			layout.getDelegate().reset();
 		}
 	}
 
@@ -117,15 +124,21 @@ public class VisualisationUtils {
 	 */
 	public static void runLayout(OVTK2Layouter layouter_new, OVTK2PropertiesAggregator viewer) {
 		// set initial values
-		layouter_new.setSize(viewer.getVisualizationViewer().getSize());
+		viewer.getVisualizationViewer().getVisualizationModel().getLayoutModel().setSize(
+				viewer.getVisualizationViewer().getWidth(), viewer.getVisualizationViewer().getHeight());
+
+//		layouter_new.setSize(viewer.getVisualizationViewer().getSize());
 
 		// show transition between layouts
-		Layout<ONDEXConcept, ONDEXRelation> layouter_old = viewer.getVisualizationViewer().getGraphLayout();
-		LayoutTransition<ONDEXConcept, ONDEXRelation> transition = new LayoutTransition<ONDEXConcept, ONDEXRelation>(viewer.getVisualizationViewer(), layouter_old, layouter_new);
+//		LayoutAlgorithm<ONDEXConcept> layouter_old = viewer.getVisualizationViewer().getVisualizationModel().getLayoutAlgorithm();
+//		LayoutAlgorithmTransition<ONDEXConcept> transition =
+//				new LayoutTransition<ONDEXConcept, ONDEXRelation>(viewer.getVisualizationViewer(), layouter_old, layouter_new);
+		LayoutAlgorithmTransition.animate(viewer.getVisualizationViewer(), layouter_new);
+
 
 		// start layout process
-		MyVisRunner runner = new MyVisRunner(transition, viewer);
-		runner.relax();
+//		MyVisRunner runner = new MyVisRunner(transition, viewer);
+//		runner.relax();
 	}
 
 	/**
@@ -140,7 +153,7 @@ public class VisualisationUtils {
 		VisualizationViewer<ONDEXConcept, ONDEXRelation> vv = viewer.getVisualizationViewer();
 
 		// local copy of pick state
-		Set<ONDEXConcept> picked = new HashSet<ONDEXConcept>(viewer.getPickedNodes());
+		Set<ONDEXConcept> picked = new HashSet<ONDEXConcept>(viewer.getSelectedNodes());
 		if (picked.size() == 1) {
 			// first scale it
 			OVTK2GraphMouse mouse = (OVTK2GraphMouse) vv.getGraphMouse();
@@ -148,10 +161,10 @@ public class VisualisationUtils {
 
 			// move centre of graph to selection
 			ONDEXConcept root = picked.iterator().next();
-			Point2D q = vv.getGraphLayout().transform(root);
+			Point q = vv.getVisualizationModel().getLayoutModel().apply(root);
 			Point2D lvc = vv.getRenderContext().getMultiLayerTransformer().inverseTransform(vv.getCenter());
-			double dx = (lvc.getX() - q.getX());
-			double dy = (lvc.getY() - q.getY());
+			double dx = (lvc.getX() - q.x);
+			double dy = (lvc.getY() - q.y);
 			vv.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.LAYOUT).translate(dx, dy);
 
 			return;
@@ -166,18 +179,18 @@ public class VisualisationUtils {
 		double maxY = Double.NEGATIVE_INFINITY;
 		// get boundaries of selected nodes
 		for (ONDEXConcept node : picked) {
-			Point2D pos = viewer.getVisualizationViewer().getGraphLayout().transform(node);
-			if (pos.getX() < minX) {
-				minX = pos.getX();
+			Point pos = viewer.getVisualizationViewer().getVisualizationModel().getLayoutModel().apply(node);
+			if (pos.x < minX) {
+				minX = pos.x;
 			}
-			if (pos.getX() > maxX) {
-				maxX = pos.getX();
+			if (pos.x > maxX) {
+				maxX = pos.x;
 			}
-			if (pos.getY() < minY) {
-				minY = pos.getY();
+			if (pos.y < minY) {
+				minY = pos.y;
 			}
-			if (pos.getY() > maxY) {
-				maxY = pos.getY();
+			if (pos.y > maxY) {
+				maxY = pos.y;
 			}
 		}
 

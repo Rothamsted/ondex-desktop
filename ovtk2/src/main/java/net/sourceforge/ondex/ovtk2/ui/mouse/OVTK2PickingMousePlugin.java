@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.function.Function;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -29,10 +30,6 @@ import javax.swing.PopupFactory;
 import org.apache.commons.collections15.Transformer;
 import org.apache.commons.collections15.functors.ConstantTransformer;
 
-import edu.uci.ics.jung.algorithms.layout.GraphElementAccessor;
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.PickingGraphMousePlugin;
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.core.ONDEXConcept;
@@ -41,6 +38,10 @@ import net.sourceforge.ondex.ovtk2.ui.gds.AttributePanel;
 import net.sourceforge.ondex.ovtk2.ui.popup.VertexMenu;
 import net.sourceforge.ondex.tools.data.ChemicalStructure;
 
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.control.SelectingGraphMousePlugin;
+import org.jungrapht.visualization.layout.GraphElementAccessor;
+import org.jungrapht.visualization.layout.model.LayoutModel;
 import uk.ac.ebi.utils.memory.CleaningObject;
 import uk.ac.ebi.utils.memory.MemoryUtils;
 
@@ -51,13 +52,13 @@ import uk.ac.ebi.utils.memory.MemoryUtils;
  * @version 27.05.2008
  */
 public class OVTK2PickingMousePlugin
-	extends PickingGraphMousePlugin<ONDEXConcept, ONDEXRelation>
+	extends SelectingGraphMousePlugin<ONDEXConcept, ONDEXRelation>
 	implements AutoCloseable
 {
 	{
 		MemoryUtils.registerCleaner ( this, this::close );
 	}
-	
+
 	// TODO the timer thread used here is the cause of random graph
 	// visualisation corruption and should be removed
 	/**
@@ -73,7 +74,7 @@ public class OVTK2PickingMousePlugin
 				public void run() {
 					// just being paranoid
 					cleanPopups();
-					if (showMouseOver && vv.isShowing() && onNode && n.equals(currentNode) && !activePopups.containsKey(n)) {
+					if (showMouseOver && vv.getComponent().isShowing() && onNode && n.equals(currentNode) && !activePopups.containsKey(n)) {
 						ConceptClass cc = n.getOfType();
 						if (cc.getId().equals("Comp") || (cc.getSpecialisationOf() != null && cc.getSpecialisationOf().getId().equals("Comp"))) {
 							for (Attribute attr : n.getAttributes()) {
@@ -90,7 +91,7 @@ public class OVTK2PickingMousePlugin
 
 										// show popup
 										PopupFactory popupFactory = PopupFactory.getSharedInstance();
-										Popup popup = popupFactory.getPopup(vv, c, location.x, location.y);
+										Popup popup = popupFactory.getPopup(vv.getComponent(), c, location.x, location.y);
 
 										// just being paranoid
 										if (!activePopups.containsKey(n)) {
@@ -136,12 +137,12 @@ public class OVTK2PickingMousePlugin
 	/**
 	 * for dragging, the old edge labels
 	 */
-	Transformer<ONDEXRelation, String> oldEdgeLabels = null;
+	Function<ONDEXRelation, String> oldEdgeLabels = null;
 
 	/**
 	 * for dragging, the old node labels
 	 */
-	Transformer<ONDEXConcept, String> oldNodeLabels = null;
+	Function<ONDEXConcept, String> oldNodeLabels = null;
 
 	/**
 	 * hover over a node
@@ -208,8 +209,8 @@ public class OVTK2PickingMousePlugin
 		Dimension size = c.getPreferredSize();
 
 		// locate parent
-		Point screenLocation = vv.getLocationOnScreen();
-		GraphicsConfiguration gc = vv.getGraphicsConfiguration();
+		Point screenLocation = vv.getComponent().getLocationOnScreen();
+		GraphicsConfiguration gc = vv.getComponent().getGraphicsConfiguration();
 		Rectangle sBounds = gc.getBounds();
 		Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
 
@@ -308,7 +309,7 @@ public class OVTK2PickingMousePlugin
 		GraphElementAccessor<ONDEXConcept, ONDEXRelation> pickSupport = vv.getPickSupport();
 
 		// layout important to find node or edge
-		Layout<ONDEXConcept, ONDEXRelation> layout = vv.getGraphLayout();
+		LayoutModel<ONDEXConcept> layout = vv.getVisualizationModel().getLayoutModel();
 
 		if (pickSupport != null) {
 			// first check if its a node
@@ -329,11 +330,11 @@ public class OVTK2PickingMousePlugin
 		cleanPopups();
 
 		if (!dragged && onNode) {
-			oldNodeLabels = vv.getRenderContext().getVertexLabelTransformer();
-			oldEdgeLabels = vv.getRenderContext().getEdgeLabelTransformer();
+			oldNodeLabels = vv.getRenderContext().getVertexLabelFunction();
+			oldEdgeLabels = vv.getRenderContext().getEdgeLabelFunction();
 			oldAntiAliased = vv.getRenderingHints().get(RenderingHints.KEY_ANTIALIASING).equals(RenderingHints.VALUE_ANTIALIAS_ON);
-			vv.getRenderContext().setVertexLabelTransformer(new ConstantTransformer(null));
-			vv.getRenderContext().setEdgeLabelTransformer(new ConstantTransformer(null));
+			vv.getRenderContext().setVertexLabelFunction(v -> null);
+			vv.getRenderContext().setEdgeLabelFunction(v -> null);
 			vv.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 			dragged = true;
 		}
@@ -356,7 +357,7 @@ public class OVTK2PickingMousePlugin
 		GraphElementAccessor<ONDEXConcept, ONDEXRelation> pickSupport = vv.getPickSupport();
 
 		// layout important to find node or edge
-		Layout<ONDEXConcept, ONDEXRelation> layout = vv.getGraphLayout();
+		LayoutModel<ONDEXConcept> layout = vv.getVisualizationModel().getLayoutModel();
 
 		if (pickSupport != null && layout != null) {
 
@@ -364,7 +365,7 @@ public class OVTK2PickingMousePlugin
 			if (VertexMenu.INSTANCE != null && VertexMenu.INSTANCE.isShowing()) {
 				cleanPopups();
 			} else {
-				if (layout.getGraph().getVertexCount() < 5000 && layout.getGraph().getEdgeCount() < 7000) {
+				if (layout.getGraph().vertexSet().size() < 5000 && layout.getGraph().edgeSet().size() < 7000) {
 					// first check if its a node
 					ONDEXConcept n = pickSupport.getVertex(layout, p.getX(), p.getY());
 					if (n != null) {
@@ -417,8 +418,8 @@ public class OVTK2PickingMousePlugin
 		JComponent c = (JComponent) e.getSource();
 		c.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		if (dragged) {
-			vv.getRenderContext().setVertexLabelTransformer(oldNodeLabels);
-			vv.getRenderContext().setEdgeLabelTransformer(oldEdgeLabels);
+			vv.getRenderContext().setVertexLabelFunction(oldNodeLabels);
+			vv.getRenderContext().setEdgeLabelFunction(oldEdgeLabels);
 			if (oldAntiAliased)
 				vv.getRenderingHints().put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			dragged = false;

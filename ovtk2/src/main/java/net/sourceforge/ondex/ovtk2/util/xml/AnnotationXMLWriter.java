@@ -10,9 +10,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 
 import org.codehaus.stax2.XMLStreamWriter2;
-
-import edu.uci.ics.jung.visualization.annotations.Annotation;
-import edu.uci.ics.jung.visualization.annotations.Annotation.Layer;
+import org.jungrapht.visualization.annotations.Annotation;
 
 /**
  * Turns a JUNG Annotation to XML.
@@ -256,7 +254,7 @@ public class AnnotationXMLWriter {
 	 * @param layer
 	 * @throws XMLStreamException
 	 */
-	protected static void write(XMLStreamWriter2 xmlw, Layer layer) throws XMLStreamException {
+	protected static void write(XMLStreamWriter2 xmlw, Annotation.Layer layer) throws XMLStreamException {
 
 		xmlw.writeStartElement(LAYER);
 

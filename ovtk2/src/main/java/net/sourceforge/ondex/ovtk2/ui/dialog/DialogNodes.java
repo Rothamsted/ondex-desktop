@@ -227,7 +227,7 @@ public class DialogNodes extends OVTK2Dialog {
 			this.anNLV = graph.getMetaData().getAttributeName("visibleNLV");
 		}
 
-		Set<ONDEXConcept> pickedNodes = viewer.getPickedNodes();
+		Set<ONDEXConcept> pickedNodes = viewer.getSelectedNodes();
 
 		// get node visibility
 		labels = new HashMap<ONDEXConcept, String>();
@@ -377,9 +377,7 @@ public class DialogNodes extends OVTK2Dialog {
 				graph.setVisibility(concept, true);
 
 			// update node labels with new mask
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
-
-			edit.end();
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();edit.end();
 			viewer.getUndoManager().addEdit(edit);
 			OVTK2Desktop.getInstance().getOVTK2Menu().updateUndoRedo(viewer);
 		}

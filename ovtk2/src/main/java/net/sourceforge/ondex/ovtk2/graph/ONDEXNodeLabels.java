@@ -1,17 +1,16 @@
 package net.sourceforge.ondex.ovtk2.graph;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.map.LazyMap;
-
 import net.sourceforge.ondex.core.ConceptAccession;
 import net.sourceforge.ondex.core.ConceptName;
 import net.sourceforge.ondex.core.DataSource;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.ovtk2.config.Config;
+import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.map.LazyMap;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Provides a transformation from a given ONDEXConcept to a String as label.
@@ -19,7 +18,7 @@ import net.sourceforge.ondex.ovtk2.config.Config;
  * @author taubertj
  * @author Matthew Pocock
  */
-public class ONDEXNodeLabels implements Transformer<ONDEXConcept, String> {
+public class ONDEXNodeLabels implements Function<ONDEXConcept, String> {
 
 	/**
 	 * More sophisticated defining of label composition.
@@ -354,7 +353,8 @@ public class ONDEXNodeLabels implements Transformer<ONDEXConcept, String> {
 	 *            ONDEXConcept
 	 * @return String
 	 */
-	public String transform(ONDEXConcept node) {
+	@Override
+	public String apply(ONDEXConcept node) {
 		if (!mask.get(node)) {
 			return "";
 		} else {

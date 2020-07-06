@@ -945,7 +945,7 @@ public class FlatFileNetworkImporter extends javax.swing.JInternalFrame {
 		 }
 		 br.close();
 		 vh.processingFinished();
-		 agg.getVisualizationViewer().getModel().fireStateChanged();
+		 agg.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		 agg.updateViewer(null);
 	 }
 
@@ -1188,7 +1188,7 @@ public class FlatFileNetworkImporter extends javax.swing.JInternalFrame {
 		 }
 		 br.close();
 		 vh.processingFinished();
-		 agg.getVisualizationViewer().getModel().fireStateChanged();
+		 agg.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 		 agg.updateViewer(null);
 	 }
 }

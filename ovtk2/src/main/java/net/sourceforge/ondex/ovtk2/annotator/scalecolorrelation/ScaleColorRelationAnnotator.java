@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -27,8 +28,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.apache.commons.collections15.Transformer;
 
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.AttributeName;
@@ -346,24 +345,21 @@ public class ScaleColorRelationAnnotator extends OVTK2Annotator implements ListS
 			if (preserveNoAtt.isSelected()) {
 				// update amplifications for non-matching edges
 				ONDEXEdgeStrokes edgeStrokes = viewer.getEdgeStrokes();
-				Transformer<ONDEXRelation, Integer> old = edgeStrokes.getEdgeSizeTransformer();
+				Function<ONDEXRelation, Integer> old = edgeStrokes.getEdgeSizeTransformer();
 				if (old != null)
 					for (ONDEXRelation r : noAttvalues) {
-						amplification.put(r, old.transform(r));
+						amplification.put(r, old.apply(r));
 					}
 			}
 
 			if (resize) {
 				// set amplification of new edge stroke size
 				ONDEXEdgeStrokes edgeStrokes = viewer.getEdgeStrokes();
-				Transformer<ONDEXRelation, Integer> esf = new Transformer<ONDEXRelation, Integer>() {
-					@Override
-					public Integer transform(ONDEXRelation arg0) {
-						Integer value = amplification.get(arg0);
-						if (value == null)
-							value = targMin;
-						return value;
-					}
+				Function<ONDEXRelation, Integer> esf = arg0 -> {
+					Integer value1 = amplification.get(arg0);
+					if (value1 == null)
+						value1 = targMin;
+					return value1;
 				};
 				edgeStrokes.setEdgeSizes(esf);
 			}
@@ -387,9 +383,7 @@ public class ScaleColorRelationAnnotator extends OVTK2Annotator implements ListS
 				}
 			}
 
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
-
-			// update viewer
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();// update viewer
 			viewer.updateViewer(null);
 
 			// clean up

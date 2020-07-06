@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -232,7 +233,7 @@ public class ScaleConceptAnnotator extends OVTK2Annotator implements ListSelecti
 	private void updateGraph(int targMin, int targMax, boolean inverse, boolean onlyvisible) {
 
 		// reset icon transformer, might have been set by annotator
-		viewer.getVisualizationViewer().getRenderContext().setVertexIconTransformer(null);
+		viewer.getVisualizationViewer().getRenderContext().setVertexIconFunction(null);
 
 		int index = listSig.getSelectedIndex();
 		AttributeName attForSig = null;
@@ -350,11 +351,12 @@ public class ScaleConceptAnnotator extends OVTK2Annotator implements ListSelecti
 			}
 
 			// get icon transformer for pie charts
-			Transformer<ONDEXConcept, Icon> vertexIconTransformer = new PieNodeIconTransformer(values, significanceMap, targMin, targMax, absolute.isSelected());
+			Function<ONDEXConcept, Icon> vertexIconTransformer =
+					new PieNodeIconTransformer(values, significanceMap, targMin, targMax, absolute.isSelected());
 
 			// TODO: use updateViewer
-			viewer.getVisualizationViewer().getRenderContext().setVertexIconTransformer(vertexIconTransformer);
-			viewer.getVisualizationViewer().getModel().fireStateChanged();
+			viewer.getVisualizationViewer().getRenderContext().setVertexIconFunction(vertexIconTransformer);
+			viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();
 			viewer.getVisualizationViewer().repaint();
 		}
 	}

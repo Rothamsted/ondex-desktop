@@ -1,25 +1,5 @@
 package net.sourceforge.ondex.ovtk2.layout;
 
-import java.awt.Dimension;
-import java.awt.geom.Point2D;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.map.LazyMap;
-
 import net.sourceforge.ondex.core.Attribute;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ConceptAccession;
@@ -32,6 +12,20 @@ import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.exception.type.AccessDeniedException;
 import net.sourceforge.ondex.exception.type.NullValueException;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.map.LazyMap;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class SugiyamaLayout extends OVTK2Layouter implements ChangeListener {
 
@@ -583,7 +577,7 @@ public class SugiyamaLayout extends OVTK2Layouter implements ChangeListener {
 				});
 
 		// nodes by integer id
-		for (ONDEXConcept n : graph.getVertices()) {
+		for (ONDEXConcept n : graph.vertexSet()) {
 			out_edges.put(n, new HashSet<ONDEXConcept>());
 			in_edges.put(n, new HashSet<ONDEXConcept>());
 			// make sure position of every node is initialised
@@ -591,16 +585,16 @@ public class SugiyamaLayout extends OVTK2Layouter implements ChangeListener {
 		}
 
 		// structure in out- and in-edges
-		for (ONDEXRelation e : graph.getEdges()) {
-			ONDEXConcept source = graph.getSource(e);
-			ONDEXConcept dest = graph.getDest(e);
+		for (ONDEXRelation e : graph.edgeSet()) {
+			ONDEXConcept source = graph.getEdgeSource(e);
+			ONDEXConcept dest = graph.getEdgeTarget(e);
 			out_edges.get(source).add(dest);
 			in_edges.get(dest).add(source);
 		}
 
 		// assign levels by maximal dfs tree
 		Map<ONDEXConcept, Integer> templevels = new HashMap<ONDEXConcept, Integer>();
-		for (ONDEXConcept root : graph.getVertices()) {
+		for (ONDEXConcept root : graph.vertexSet()) {
 			Map<ONDEXConcept, Integer> tree = new HashMap<ONDEXConcept, Integer>();
 			dfs(tree, new HashSet<ONDEXConcept>(), root, 0);
 			for (ONDEXConcept n : tree.keySet()) {
@@ -677,8 +671,9 @@ public class SugiyamaLayout extends OVTK2Layouter implements ChangeListener {
 			for (ONDEXConcept n : levels.get(level)) {
 				// ignore dummy nodes
 				if (!(n instanceof DummyConcept)) {
-					Point2D coord = this.transform(n);
-					coord.setLocation(positions.get(n), current_y);
+					layoutModel.set(n, positions.get(n), current_y);
+//					Point coord = layoutModel.apply(n);
+//					coord.setLocation(positions.get(n), current_y);
 					if (DEBUG)
 						System.out.print(positions.get(n) + " ");
 				}

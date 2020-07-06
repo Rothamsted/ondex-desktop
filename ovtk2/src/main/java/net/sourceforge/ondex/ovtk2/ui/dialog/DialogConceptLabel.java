@@ -35,7 +35,6 @@ import org.codehaus.stax2.XMLStreamWriter2;
 
 import com.ctc.wstx.io.CharsetNames;
 
-import edu.uci.ics.jung.visualization.renderers.Renderer;
 import net.sourceforge.ondex.core.ConceptClass;
 import net.sourceforge.ondex.core.DataSource;
 import net.sourceforge.ondex.ovtk2.config.Config;
@@ -46,6 +45,7 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.ovtk2.util.ErrorDialog;
 import net.sourceforge.ondex.ovtk2.util.xml.ConceptLabelXMLReader;
 import net.sourceforge.ondex.ovtk2.util.xml.ConceptLabelXMLWriter;
+import org.jungrapht.visualization.renderers.Renderer;
 
 /**
  * Dialog to configure combinations for concept labels.
@@ -114,7 +114,7 @@ public class DialogConceptLabel extends OVTK2Dialog {
 		labelPositions.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent e) {
 				Renderer.VertexLabel.Position position = (Renderer.VertexLabel.Position) e.getItem();
-				viewer.getVisualizationViewer().getRenderer().getVertexLabelRenderer().setPosition(position);
+				viewer.getVisualizationViewer().getRenderContext().setVertexLabelPosition(position);
 				viewer.getVisualizationViewer().repaint();
 			}
 		});

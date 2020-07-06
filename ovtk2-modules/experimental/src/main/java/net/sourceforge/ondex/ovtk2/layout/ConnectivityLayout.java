@@ -1,7 +1,11 @@
 package net.sourceforge.ondex.ovtk2.layout;
 
-import static java.lang.Math.PI;
+import net.sourceforge.ondex.core.ONDEXConcept;
+import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import org.jgrapht.Graphs;
+import org.jungrapht.visualization.layout.algorithms.LayoutAlgorithm;
 
+import javax.swing.*;
 import java.awt.geom.Point2D;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,23 +15,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import net.sourceforge.ondex.core.ONDEXConcept;
-import net.sourceforge.ondex.core.ONDEXRelation;
-import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import static java.lang.Math.PI;
 
 public class ConnectivityLayout extends OVTK2Layouter {
 	// #####FIELDS####
 	/**
 	 * old layouter.
 	 */
-	private Layout<ONDEXConcept, ONDEXRelation> oldLayouter;
+	private LayoutAlgorithm<ONDEXConcept> oldLayouter;
 
 	private double smallSeparator = 10.0;
 
@@ -44,7 +39,7 @@ public class ConnectivityLayout extends OVTK2Layouter {
 	public ConnectivityLayout(OVTK2PropertiesAggregator viewer) {
 		super(viewer);
 		aViewer = viewer;
-		oldLayouter = viewer.getVisualizationViewer().getGraphLayout();
+		oldLayouter = viewer.getVisualizationViewer().getVisualizationModel().getLayoutAlgorithm();
 	}
 
 	// #####METHODS#####
@@ -66,18 +61,18 @@ public class ConnectivityLayout extends OVTK2Layouter {
 		return p;
 	}
 
-	@Override
+//	@Override
 	public void initialize() {
 		if (rowSpinner != null) {
 			rows = (Integer) rowSpinner.getValue();
 		}
 
-		Collection<ONDEXConcept> selected = aViewer.getPickedNodes();
+		Collection<ONDEXConcept> selected = aViewer.getSelectedNodes();
 		if (selected == null || selected.size() == 0) {
-			JOptionPane.showMessageDialog(viewer,
+			JOptionPane.showMessageDialog(viewer.getComponent(),
 					"You need to select some nodes first!",
 					"Layout requirement", JOptionPane.INFORMATION_MESSAGE);
-			copyOldLayout();
+//			copyOldLayout();
 			return;
 		}
 
@@ -88,8 +83,7 @@ public class ConnectivityLayout extends OVTK2Layouter {
 			col_curr = 0;
 			for (ONDEXConcept c : row) {
 				hits.add(c);
-				Point2D coord = transform(c);
-				coord.setLocation(((double) col_curr) * smallSeparator,
+				layoutModel.set(c,((double) col_curr) * smallSeparator,
 						((double) row_curr) * smallSeparator);
 				col_curr++;
 			}
@@ -107,7 +101,7 @@ public class ConnectivityLayout extends OVTK2Layouter {
 
 		// what is left over
 		Collection<ONDEXConcept> restView = new HashSet<ONDEXConcept>(
-				graph.getVertices());
+				graph.vertexSet());
 		restView.removeAll(selected);
 		restView.removeAll(hits);
 
@@ -117,24 +111,24 @@ public class ConnectivityLayout extends OVTK2Layouter {
 		makeCircle(restCenter, restView);
 	}
 
-	private void copyOldLayout() {
-		for (ONDEXConcept node : graph.getVertices()) {
-			Point2D coord = oldLayouter.transform(node);
-			Point2D coordNew = transform(node);
-			coordNew.setLocation(coord.getX(), coord.getY());
-		}
-	}
+//	private void copyOldLayout() {
+//		for (ONDEXConcept node : graph.vertexSet()) {
+//			Point2D coord = oldLayouter.apply(node);
+//			Point2D coordNew = apply(node);
+//			coordNew.setLocation(coord.getX(), coord.getY());
+//		}
+//	}
 
 	private Collection<LinkedList<ONDEXConcept>> search(
 			Collection<ONDEXConcept> selected) {
 		Map<Integer, LinkedList<ONDEXConcept>> result = new HashMap<Integer, LinkedList<ONDEXConcept>>();
 		int maxCount = 0;
-		for (ONDEXConcept c : graph.getVertices()) {
+		for (ONDEXConcept c : graph.vertexSet()) {
 			if (selected.contains(c)) {
 				continue;
 			}
 			int count = 0;
-			for (ONDEXConcept neighbour : graph.getNeighbors(c)) {
+			for (ONDEXConcept neighbour : Graphs.neighborListOf(graph, c)) {
 				if (selected.contains(neighbour)) {
 					count++;
 				}
@@ -180,12 +174,13 @@ public class ConnectivityLayout extends OVTK2Layouter {
 			i++;
 
 			// set new coordinates
-			Point2D coord = transform(concept);
-			coord.setLocation(x, y);
+//			Point coord = layoutModel.apply(concept);
+//			coord.setLocation(x, y);
+			layoutModel.set(concept, x, y);
 		}
 	}
 
-	@Override
+//	@Override
 	public void reset() {
 		initialize();
 	}

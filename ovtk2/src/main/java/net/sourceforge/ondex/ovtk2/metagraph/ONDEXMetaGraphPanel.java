@@ -23,16 +23,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import edu.uci.ics.jung.algorithms.layout.KKLayout;
-import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
-import edu.uci.ics.jung.visualization.Layer;
-import edu.uci.ics.jung.visualization.VisualizationViewer;
-import edu.uci.ics.jung.visualization.control.CrossoverScalingControl;
-import edu.uci.ics.jung.visualization.control.DefaultModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse;
-import edu.uci.ics.jung.visualization.control.ModalGraphMouse.Mode;
-import edu.uci.ics.jung.visualization.control.ScalingControl;
-import edu.uci.ics.jung.visualization.renderers.Renderer.VertexLabel.Position;
+import net.sourceforge.ondex.core.ONDEXConcept;
+import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.config.Config;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2Desktop;
@@ -40,6 +32,24 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2Viewer;
 import net.sourceforge.ondex.ovtk2.ui.popup.MetaConceptMenu;
 import net.sourceforge.ondex.ovtk2.ui.popup.MetaRelationMenu;
 import net.sourceforge.ondex.ovtk2.ui.popup.PopupVertexEdgeMenuMousePlugin;
+import org.jungrapht.visualization.MultiLayerTransformer;
+import org.jungrapht.visualization.VisualizationModel;
+import org.jungrapht.visualization.VisualizationScrollPane;
+import org.jungrapht.visualization.VisualizationViewer;
+import org.jungrapht.visualization.control.CrossoverScalingControl;
+import org.jungrapht.visualization.control.DefaultModalGraphMouse;
+import org.jungrapht.visualization.control.ModalGraphMouse;
+import org.jungrapht.visualization.control.ModalGraphMouse.Mode;
+import org.jungrapht.visualization.control.ScalingControl;
+import org.jungrapht.visualization.layout.algorithms.KKLayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.LayoutAlgorithm;
+import org.jungrapht.visualization.layout.algorithms.util.IterativeContext;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
+import org.jungrapht.visualization.renderers.Renderer;
+import org.jungrapht.visualization.renderers.Renderer.VertexLabel.Position;
+
+import static org.jungrapht.visualization.MultiLayerTransformer.*;
 
 public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, ChangeListener, ComponentListener {
 
@@ -47,10 +57,12 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 	private static final long serialVersionUID = -981647571571550005L;
 
 	// rendering hints
-	private Map<RenderingHints.Key, Object> hints = new HashMap<RenderingHints.Key, Object>();
+	private Map<RenderingHints.Key, Object> hints = new HashMap<>();
 
 	// MetaGraph layout used
-	private KKLayout<ONDEXMetaConcept, ONDEXMetaRelation> layout = null;
+	private KKLayoutAlgorithm<ONDEXMetaConcept> layout = null;
+
+	private VisualizationModel<ONDEXConcept, ONDEXRelation> visualizationModel;
 
 	// display metagraph
 	private ONDEXMetaGraph meta = null;
@@ -110,23 +122,24 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 	 * 
 	 * @return Point2D[] min bounds, max bounds
 	 */
-	private Point2D[] calcBounds() {
-		Point2D[] result = new Point2D[2];
-		Point2D min = null;
-		Point2D max = null;
-		Iterator<ONDEXMetaConcept> it = layout.getGraph().getVertices().iterator();
+	private Point[] calcBounds() {
+		Point[] result = new Point[2];
+		Point min = null;
+		Point max = null;
+		VisualizationModel<ONDEXMetaConcept, ONDEXMetaRelation> visualizationModel =
+				visviewer.getVisualizationModel();
+		LayoutModel<ONDEXMetaConcept> layoutModel = visualizationModel.getLayoutModel();
+		Iterator<ONDEXMetaConcept> it = visualizationModel.getGraph().vertexSet().iterator();
 		while (it.hasNext()) {
-			Point2D point = layout.transform(it.next());
+			Point point = layoutModel.apply(it.next());
 			if (min == null) {
-				min = new Point2D.Double(0, 0);
-				min.setLocation(point);
+				min = point;
 			}
 			if (max == null) {
-				max = new Point2D.Double(0, 0);
-				max.setLocation(point);
+				max = point;
 			}
-			min.setLocation(Math.min(min.getX(), point.getX()), Math.min(min.getY(), point.getY()));
-			max.setLocation(Math.max(max.getX(), point.getX()), Math.max(max.getY(), point.getY()));
+			min = Point.of(Math.min(min.x, point.x), Math.min(min.y, point.y));
+			max = Point.of(Math.max(max.x, point.x), Math.max(max.y, point.y));
 		}
 		result[0] = min;
 		result[1] = max;
@@ -165,26 +178,31 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 	private void initVisviewer() {
 
 		ONDEXJUNGGraph jung = viewer.getONDEXJUNGGraph();
+//		visualizationModel = viewer.getVisualizationViewer().getVisualizationModel();
 
 		// new metagraph viewer
-		layout = new KKLayout<ONDEXMetaConcept, ONDEXMetaRelation>(meta);
-		visviewer = new VisualizationViewer<ONDEXMetaConcept, ONDEXMetaRelation>(layout, preferredSize);
-		visviewer.setDoubleBuffered(true);
+		layout = new KKLayoutAlgorithm<>();
+		visviewer = VisualizationViewer.builder(meta).layoutAlgorithm(layout).viewSize(preferredSize).build();
+//				new VisualizationViewer<ONDEXMetaConcept, ONDEXMetaRelation>(layout, preferredSize);
+//		LayoutAlgorithm<ONDEXMetaConcept> layout = new KKLayoutAlgorithm<>();
+//		visviewer.getVisualizationModel().setGraph(meta, false);
+//		visviewer.getVisualizationModel().setLayoutAlgorithm(layout);
+		visviewer.setDoubleBuffered(false);
 		visviewer.setBackground(Color.white);
 
 		// set label position and label transformer
-		visviewer.getRenderer().getVertexLabelRenderer().setPosition(Position.AUTO);
-		visviewer.getRenderContext().setVertexLabelTransformer(new ONDEXMetaConceptLabels(jung));
-		visviewer.getRenderContext().setEdgeLabelTransformer(new ONDEXMetaRelationLabels(jung));
+		visviewer.getRenderContext().setVertexLabelPosition(Position.AUTO);
+		visviewer.getRenderContext().setVertexLabelFunction(new ONDEXMetaConceptLabels(jung));
+		visviewer.getRenderContext().setEdgeLabelFunction(new ONDEXMetaRelationLabels(jung));
 
 		// set visible attribute renderer
-		visviewer.getRenderContext().setEdgeDrawPaintTransformer(new ONDEXMetaRelationColors(jung, visviewer.getPickedEdgeState()));
-		visviewer.getRenderContext().setVertexShapeTransformer(new ONDEXMetaConceptShapes(jung));
+		visviewer.getRenderContext().setEdgeDrawPaintFunction(new ONDEXMetaRelationColors(jung, visviewer.getSelectedEdgeState()));
+		visviewer.getRenderContext().setVertexShapeFunction(new ONDEXMetaConceptShapes(jung));
 		// visviewer.getRenderContext().setVertexDrawPaintTransformer(
 		// new ONDEXMetaConceptColors( aog));
-		visviewer.getRenderContext().setVertexFillPaintTransformer(new ONDEXMetaConceptColors(jung, visviewer.getPickedVertexState()));
-		visviewer.getRenderContext().setEdgeArrowPredicate(new ONDEXMetaRelationArrows(jung));
-		visviewer.getRenderContext().setEdgeStrokeTransformer(new ONDEXMetaRelationStrokes(jung));
+		visviewer.getRenderContext().setVertexFillPaintFunction(new ONDEXMetaConceptColors(jung, visviewer.getSelectedVertexState()));
+//		visviewer.getRenderContext().setEdgeArrowPredicate(new ONDEXMetaRelationArrows(jung));
+		visviewer.getRenderContext().setEdgeStrokeFunction(new ONDEXMetaRelationStrokes(jung));
 
 		// set antialiasing painting on
 		Map<?, ?> temp = visviewer.getRenderingHints();
@@ -199,10 +217,10 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 		visviewer.setRenderingHints(hints);
 
 		// standard mouse support
-		DefaultModalGraphMouse<ONDEXMetaConcept, ONDEXMetaRelation> graphMouse = new DefaultModalGraphMouse<ONDEXMetaConcept, ONDEXMetaRelation>();
+		DefaultModalGraphMouse<ONDEXMetaConcept, ONDEXMetaRelation> graphMouse = new DefaultModalGraphMouse<>();
 
 		// Trying out our new popup menu mouse producer...
-		PopupVertexEdgeMenuMousePlugin<ONDEXMetaConcept, ONDEXMetaRelation> myPlugin = new PopupVertexEdgeMenuMousePlugin<ONDEXMetaConcept, ONDEXMetaRelation>();
+		PopupVertexEdgeMenuMousePlugin<ONDEXMetaConcept, ONDEXMetaRelation> myPlugin = new PopupVertexEdgeMenuMousePlugin<>();
 		// Add some popup menus for the edges and vertices to our mouse
 		// producer.
 		JPopupMenu edgeMenu = new MetaRelationMenu(viewer);
@@ -216,7 +234,7 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 		visviewer.addKeyListener(graphMouse.getModeKeyListener());
 
 		// zoom pane and mouse menu in the corner
-		GraphZoomScrollPane scrollPane = new GraphZoomScrollPane(visviewer);
+		VisualizationScrollPane scrollPane = new VisualizationScrollPane(visviewer);
 		JMenuBar menu = new JMenuBar();
 		menu.add(graphMouse.getModeMenu());
 		scrollPane.setCorner(menu);
@@ -242,9 +260,13 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 		buttons.add(mainGraph);
 
 		// make sure that the layout has actually finished
-		while (!layout.done()) {
-			layout.step();
+		if (layout instanceof IterativeContext) {
+			IterativeContext iterativeContext = (IterativeContext)layout;
+			while (!iterativeContext.done()) {
+				iterativeContext.step();
+			}
 		}
+
 
 		// add to content pane
 		this.add(scrollPane, BorderLayout.CENTER);
@@ -258,12 +280,14 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 	 * Performs a re-layout of the meta graph.
 	 */
 	public void relayout() {
-		layout.setSize(visviewer.getSize());
-		while (!layout.done()) {
-			layout.step();
-		}
-		visviewer.getModel().fireStateChanged();
-		this.scaleToFit();
+			LayoutModel<ONDEXMetaConcept> layoutModel =
+					visviewer.getVisualizationModel().getLayoutModel();
+			layoutModel.setSize(visviewer.getWidth(), visviewer.getHeight());
+			while (!layout.done()) {
+				layout.step();
+			}
+			visviewer.getVisualizationModel().getModelChangeSupport().fireModelChanged();
+			this.scaleToFit();
 	}
 
 	/**
@@ -277,17 +301,17 @@ public class ONDEXMetaGraphPanel extends JPanel implements ActionListener, Chang
 		visviewer.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).setToIdentity();
 
 		// place layout centre in centre of the view
-		Point2D[] calc = calcBounds();
-		Point2D min = calc[0];
-		Point2D max = calc[1];
+		Point[] calc = calcBounds();
+		Point min = calc[0];
+		Point max = calc[1];
 
 		// check for empty graph
 		if (min != null && max != null) {
-			Point2D layout_bounds = new Point2D.Double(max.getX() - min.getX(), max.getY() - min.getY());
+			Point2D layout_bounds = new Point2D.Double(max.x - min.x, max.y - min.y);
 			// layouter produced nice bounds
 			if (layout_bounds.getX() > 0 && layout_bounds.getY() > 0) {
 				Point2D screen_center = visviewer.getCenter();
-				Point2D layout_center = new Point2D.Double(screen_center.getX() - (layout_bounds.getX() / 2) - min.getX(), screen_center.getY() - (layout_bounds.getY() / 2) - min.getY());
+				Point2D layout_center = new Point2D.Double(screen_center.getX() - (layout_bounds.getX() / 2) - min.x, screen_center.getY() - (layout_bounds.getY() / 2) - min.y);
 				visviewer.getRenderContext().getMultiLayerTransformer().getTransformer(Layer.VIEW).translate(layout_center.getX(), layout_center.getY());
 
 				// scale graph

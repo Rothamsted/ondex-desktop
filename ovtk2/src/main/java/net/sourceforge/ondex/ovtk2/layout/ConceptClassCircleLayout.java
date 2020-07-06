@@ -17,6 +17,8 @@ import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.tools.threading.monitoring.Monitorable;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
 
 /**
  * Layouter which places circles for each concept class on one big circle.
@@ -51,7 +53,12 @@ public class ConceptClassCircleLayout extends OVTK2Layouter implements Monitorab
 		super(viewer);
 	}
 
-	@Override
+	public void visit(LayoutModel<ONDEXConcept> layoutModel) {
+		super.visit(layoutModel);
+		initialize();
+	}
+
+//	@Override
 	public void reset() {
 		initialize();
 	}
@@ -63,13 +70,13 @@ public class ConceptClassCircleLayout extends OVTK2Layouter implements Monitorab
 	 * edu.uci.ics.jung.visualization.layout.AbstractLayout#setSize(java.awt
 	 * .Dimension)
 	 */
-	@Override
+//	@Override
 	public void setSize(Dimension d) {
-		super.setSize(d);
+		layoutModel.setSize(d.width, d.height);
 		initialize();
 	}
 
-	@Override
+//	@Override
 	public void initialize() {
 		initialize(false);
 	}
@@ -84,8 +91,8 @@ public class ConceptClassCircleLayout extends OVTK2Layouter implements Monitorab
 		progress = 0;
 		state = Monitorable.STATE_IDLE;
 
-		Dimension d = getSize();
-		ONDEXJUNGGraph graph = (ONDEXJUNGGraph) this.getGraph();
+		Dimension d = new Dimension(layoutModel.getWidth(), layoutModel.getHeight());
+		ONDEXJUNGGraph graph = (ONDEXJUNGGraph) this.graph;
 		if (graph != null && d != null) {
 
 			double height = d.getHeight();
@@ -153,8 +160,8 @@ public class ConceptClassCircleLayout extends OVTK2Layouter implements Monitorab
 					Iterator<ONDEXConcept> it_c = nodes.iterator();
 					for (int i = 0; it_c.hasNext(); i++) {
 						ONDEXConcept node = it_c.next();
-						Point2D coord = transform(node);
-						coord.setLocation(currentX + r * Math.cos(i * angle), currentY + r * Math.sin(i * angle));
+						Point coord = Point.of(currentX + r * Math.cos(i * angle), currentY + r * Math.sin(i * angle));
+						layoutModel.set(node, coord);
 						progress++;
 						if (cancelled)
 							return;
@@ -168,11 +175,9 @@ public class ConceptClassCircleLayout extends OVTK2Layouter implements Monitorab
 				ONDEXConcept[] nodes = vertices.toArray(new ONDEXConcept[0]);
 
 				for (int i = 0; i < nodes.length; i++) {
-					Point2D coord = transform(nodes[i]);
-
 					double angle = (2 * Math.PI * i) / nodes.length;
-
-					coord.setLocation(Math.cos(angle) * radius + width / 2, Math.sin(angle) * radius + height / 2);
+					Point coord = Point.of(Math.cos(angle) * radius + width / 2, Math.sin(angle) * radius + height / 2);
+					layoutModel.set(nodes[i], coord);
 					progress++;
 					if (cancelled)
 						return;
@@ -191,7 +196,7 @@ public class ConceptClassCircleLayout extends OVTK2Layouter implements Monitorab
 
 	@Override
 	public int getMaxProgress() {
-		return 2 * getGraph().getVertexCount();
+		return 2 * graph.vertexSet().size();
 	}
 
 	@Override

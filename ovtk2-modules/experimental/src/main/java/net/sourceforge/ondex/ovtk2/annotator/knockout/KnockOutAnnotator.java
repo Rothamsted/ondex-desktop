@@ -1,5 +1,24 @@
 package net.sourceforge.ondex.ovtk2.annotator.knockout;
 
+import net.sourceforge.ondex.core.ONDEXConcept;
+import net.sourceforge.ondex.core.ONDEXRelation;
+import net.sourceforge.ondex.ovtk2.annotator.OVTK2Annotator;
+import net.sourceforge.ondex.ovtk2.config.Config;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
+import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeShapes;
+import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
+import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
+import org.apache.commons.collections15.Factory;
+import org.apache.commons.collections15.map.LazyMap;
+import org.jungrapht.visualization.selection.MutableSelectedState;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
@@ -12,36 +31,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SpringLayout;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-
-import org.apache.commons.collections15.Factory;
-import org.apache.commons.collections15.Transformer;
-import org.apache.commons.collections15.map.LazyMap;
-
-import edu.uci.ics.jung.visualization.picking.PickedState;
-import net.sourceforge.ondex.core.ONDEXConcept;
-import net.sourceforge.ondex.core.ONDEXRelation;
-import net.sourceforge.ondex.ovtk2.annotator.OVTK2Annotator;
-import net.sourceforge.ondex.ovtk2.config.Config;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
-import net.sourceforge.ondex.ovtk2.graph.ONDEXNodeShapes;
-import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
-import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
 
 /**
  * Performs node and edge knock outs to derive influence the connectivity matrix
@@ -262,8 +251,8 @@ public class KnockOutAnnotator extends OVTK2Annotator implements
 	 */
 	public void valueChanged(ListSelectionEvent e) {
 		ONDEXJUNGGraph graph = viewer.getONDEXJUNGGraph();
-		PickedState<ONDEXConcept> state = viewer.getVisualizationViewer()
-				.getPickedVertexState();
+		MutableSelectedState<ONDEXConcept> state = viewer.getVisualizationViewer()
+				.getSelectedVertexState();
 		state.clear();
 
 		int[] selection = table.getSelectedRows();
@@ -271,7 +260,7 @@ public class KnockOutAnnotator extends OVTK2Annotator implements
 			int index = table.convertRowIndexToModel(selection[i]);
 			Integer id = (Integer) table.getModel().getValueAt(index, 0);
 			ONDEXConcept node = graph.getConcept(id);
-			state.pick(node, true);
+			state.select(node, true);
 		}
 	}
 
@@ -311,12 +300,7 @@ public class KnockOutAnnotator extends OVTK2Annotator implements
 			ONDEXNodeShapes nodeShapes = viewer.getNodeShapes();
 			final Map<ONDEXConcept, Integer> amplifications = resizeNodes(min,
 					max, map);
-			nodeShapes.setNodeSizes(new Transformer<ONDEXConcept, Integer>() {
-				@Override
-				public Integer transform(ONDEXConcept input) {
-					return amplifications.get(input);
-				}
-			});
+			nodeShapes.setNodeSizes(input -> amplifications.get(input));
 			nodeShapes.updateAll();
 
 			used = true;

@@ -14,7 +14,7 @@ public class HideEdgeLabelItem extends EntityMenuItem<ONDEXRelation> {
 	@Override
 	public boolean accepts() {
 		for (ONDEXRelation edge : entities) {
-			if (viewer.getEdgeLabels().transform(edge).length() > 0)
+			if (viewer.getEdgeLabels().apply(edge).length() > 0)
 				return true;
 		}
 		return false;

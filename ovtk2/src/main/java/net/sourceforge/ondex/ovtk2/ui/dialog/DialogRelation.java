@@ -214,7 +214,7 @@ public class DialogRelation extends OVTK2Dialog {
 		from.addItem(Config.language.getProperty("Dialog.Relation.PickNew"));
 		to.addItem(Config.language.getProperty("Dialog.Relation.PickNew"));
 
-		for (ONDEXConcept c : viewer.getPickedNodes()) {
+		for (ONDEXConcept c : viewer.getSelectedNodes()) {
 			from.addItem(String.valueOf(c.getId()));
 			to.addItem(String.valueOf(c.getId()));
 		}
@@ -235,7 +235,7 @@ public class DialogRelation extends OVTK2Dialog {
 		tags.addItem("");
 		tags.addItem(Config.language.getProperty("Dialog.Relation.PickNew"));
 
-		for (ONDEXConcept c : viewer.getPickedNodes()) {
+		for (ONDEXConcept c : viewer.getSelectedNodes()) {
 			tags.addItem(String.valueOf(c.getId()));
 		}
 

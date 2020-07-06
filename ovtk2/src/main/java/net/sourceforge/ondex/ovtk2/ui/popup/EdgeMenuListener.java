@@ -1,6 +1,7 @@
 package net.sourceforge.ondex.ovtk2.ui.popup;
 
-import edu.uci.ics.jung.visualization.VisualizationViewer;
+
+import org.jungrapht.visualization.VisualizationViewer;
 
 /**
  * An interface for menu items that are interested in knowning the currently

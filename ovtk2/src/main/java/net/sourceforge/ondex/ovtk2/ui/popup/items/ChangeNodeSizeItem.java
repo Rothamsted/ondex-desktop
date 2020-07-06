@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -58,15 +59,11 @@ public class ChangeNodeSizeItem extends EntityMenuItem<ONDEXConcept> {
 				}
 
 				// wrap new transformer around old one
-				final Transformer<ONDEXConcept, Integer> oldSizes = shapes.getNodeSizes();
-				Transformer<ONDEXConcept, Integer> newSizes = new Transformer<ONDEXConcept, Integer>() {
-
-					@Override
-					public Integer transform(ONDEXConcept arg0) {
-						if (entitiesSizes.containsKey(arg0))
-							return entitiesSizes.get(arg0);
-						return oldSizes.transform(arg0);
-					}
+				final Function<ONDEXConcept, Integer> oldSizes = shapes.getNodeSizes();
+				Function<ONDEXConcept, Integer> newSizes = arg0 -> {
+					if (entitiesSizes.containsKey(arg0))
+						return entitiesSizes.get(arg0);
+					return oldSizes.apply(arg0);
 				};
 				shapes.setNodeSizes(newSizes);
 

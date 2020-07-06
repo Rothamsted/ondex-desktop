@@ -1,32 +1,5 @@
 package net.sourceforge.ondex.ovtk2.io;
 
-import static net.sourceforge.ondex.export.fasta.ArgumentNames.CONCEPTS_ARG;
-import static net.sourceforge.ondex.export.fasta.ArgumentNames.HEADER_FIELDS_ARG;
-import static net.sourceforge.ondex.export.fasta.ArgumentNames.INCLUDE_VARIENTS_ARG;
-import static net.sourceforge.ondex.export.fasta.ArgumentNames.SEQUENCE_TYPE_ARG;
-import static net.sourceforge.ondex.export.fasta.ArgumentNames.TRANSLATE_TAXID_ARG;
-import static net.sourceforge.ondex.export.fasta.ArgumentNames.ZIP_FILE_ARG;
-
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JInternalFrame;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.SpringLayout;
-
-import edu.uci.ics.jung.visualization.picking.PickedState;
 import net.sourceforge.ondex.InvalidPluginArgumentException;
 import net.sourceforge.ondex.ONDEXPluginArguments;
 import net.sourceforge.ondex.args.FileArgumentDefinition;
@@ -38,6 +11,25 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2Desktop;
 import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.ovtk2.util.ErrorDialog;
 import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
+import org.jungrapht.visualization.selection.SelectedState;
+
+import javax.swing.*;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static net.sourceforge.ondex.export.fasta.ArgumentNames.CONCEPTS_ARG;
+import static net.sourceforge.ondex.export.fasta.ArgumentNames.HEADER_FIELDS_ARG;
+import static net.sourceforge.ondex.export.fasta.ArgumentNames.INCLUDE_VARIENTS_ARG;
+import static net.sourceforge.ondex.export.fasta.ArgumentNames.SEQUENCE_TYPE_ARG;
+import static net.sourceforge.ondex.export.fasta.ArgumentNames.TRANSLATE_TAXID_ARG;
+import static net.sourceforge.ondex.export.fasta.ArgumentNames.ZIP_FILE_ARG;
 
 /**
  * This is a work in progress...It is no where near finished.
@@ -158,9 +150,9 @@ public class FASTAExporter extends JInternalFrame implements ActionListener,
 		OVTK2PropertiesAggregator viewer = OVTK2Desktop.getDesktopResources()
 				.getSelectedViewer();
 		if (viewer != null) {
-			PickedState<ONDEXConcept> state = viewer.getVisualizationViewer()
-					.getPickedVertexState();
-			Set<ONDEXConcept> set = state.getPicked();
+			SelectedState<ONDEXConcept> state = viewer.getVisualizationViewer()
+					.getSelectedVertexState();
+			Set<ONDEXConcept> set = state.getSelected();
 
 			for (ONDEXConcept node : set) {
 				ONDEXConcept ac = node;

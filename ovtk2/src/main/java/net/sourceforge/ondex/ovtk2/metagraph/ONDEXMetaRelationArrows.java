@@ -1,10 +1,10 @@
 package net.sourceforge.ondex.ovtk2.metagraph;
 
-import org.apache.commons.collections15.Predicate;
-
-import edu.uci.ics.jung.graph.Graph;
-import edu.uci.ics.jung.graph.util.Context;
 import net.sourceforge.ondex.core.ONDEXGraph;
+import org.jgrapht.Graph;
+import org.jungrapht.visualization.util.Context;
+
+import java.util.function.Predicate;
 
 /**
  * Provides a prediate whether or not to draw arrows at edges.
@@ -32,7 +32,8 @@ public class ONDEXMetaRelationArrows implements Predicate<Context<Graph<ONDEXMet
 	 *            ONDEXMetaRelation>
 	 * @return boolean
 	 */
-	public boolean evaluate(Context<Graph<ONDEXMetaConcept, ONDEXMetaRelation>, ONDEXMetaRelation> object) {
+	@Override
+	public boolean test(Context<Graph<ONDEXMetaConcept, ONDEXMetaRelation>, ONDEXMetaRelation> object) {
 		return true;
 	}
 

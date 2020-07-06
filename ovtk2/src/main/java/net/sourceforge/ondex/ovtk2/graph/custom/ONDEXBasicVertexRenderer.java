@@ -11,18 +11,21 @@ import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
-import edu.uci.ics.jung.algorithms.layout.Layout;
-import edu.uci.ics.jung.visualization.Layer;
-import edu.uci.ics.jung.visualization.RenderContext;
-import edu.uci.ics.jung.visualization.renderers.BasicVertexRenderer;
-import edu.uci.ics.jung.visualization.transform.shape.GraphicsDecorator;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
 import net.sourceforge.ondex.ovtk2.graph.ONDEXJUNGGraph;
 import net.sourceforge.ondex.ovtk2.util.AppearanceSynchronizer;
+import org.jungrapht.visualization.MultiLayerTransformer;
+import org.jungrapht.visualization.RenderContext;
+import org.jungrapht.visualization.VisualizationModel;
+import org.jungrapht.visualization.layout.model.LayoutModel;
+import org.jungrapht.visualization.layout.model.Point;
+import org.jungrapht.visualization.renderers.AbstractVertexRenderer;
+import org.jungrapht.visualization.renderers.HeavyweightVertexRenderer;
+import org.jungrapht.visualization.transform.shape.GraphicsDecorator;
 
-public class ONDEXBasicVertexRenderer extends BasicVertexRenderer<ONDEXConcept, ONDEXRelation> {
+public class ONDEXBasicVertexRenderer extends HeavyweightVertexRenderer<ONDEXConcept, ONDEXRelation> {
 
 	ONDEXJUNGGraph graph;
 
@@ -49,10 +52,12 @@ public class ONDEXBasicVertexRenderer extends BasicVertexRenderer<ONDEXConcept, 
 		return path;
 	}
 
+	// TODO: this needs work to make sure it's okay with the jungrapht rendering
 	@Override
-	protected void paintIconForVertex(RenderContext<ONDEXConcept, ONDEXRelation> rc, ONDEXConcept v, Layout<ONDEXConcept, ONDEXRelation> layout) {
-		super.paintIconForVertex(rc, v, layout);
+	protected void paintIconForVertex(RenderContext<ONDEXConcept, ONDEXRelation> rc, VisualizationModel<ONDEXConcept, ONDEXRelation> visualizationModel, ONDEXConcept v) {
+		super.paintIconForVertex(rc, visualizationModel, v);
 
+		LayoutModel<ONDEXConcept> layoutModel = visualizationModel.getLayoutModel();
 		// check for flagged drawing
 		boolean flagged = false;
 		AttributeName anFlag = graph.getMetaData().getAttributeName(AppearanceSynchronizer.FLAGGED);
@@ -67,8 +72,9 @@ public class ONDEXBasicVertexRenderer extends BasicVertexRenderer<ONDEXConcept, 
 			// get the shape to be rendered
 			Shape shape = createArrow();
 
-			Point2D p = layout.transform(v);
-			p = rc.getMultiLayerTransformer().transform(Layer.LAYOUT, p);
+			Point lp = layoutModel.apply(v);
+			Point2D p = new Point2D.Double(lp.x, lp.y);
+			p = rc.getMultiLayerTransformer().transform(MultiLayerTransformer.Layer.LAYOUT, p);
 			float x = (float) p.getX();
 			float y = (float) p.getY();
 			// create a transform that translates to the location of
@@ -77,12 +83,8 @@ public class ONDEXBasicVertexRenderer extends BasicVertexRenderer<ONDEXConcept, 
 			// transform the vertex shape with xtransform
 			shape = xform.createTransformedShape(shape);
 
-			vertexHit = vertexHit(rc, shape);
-			// rc.getViewTransformer().transform(shape).intersects(deviceRectangle);
+			paintShapeForVertex(rc, v, shape);
 
-			if (vertexHit) {
-				paintShapeForVertex(rc, v, shape);
-			}
 		}
 	}
 
@@ -91,7 +93,7 @@ public class ONDEXBasicVertexRenderer extends BasicVertexRenderer<ONDEXConcept, 
 
 		GraphicsDecorator g = rc.getGraphicsContext();
 		Paint oldPaint = g.getPaint();
-		Paint fillPaint = rc.getVertexFillPaintTransformer().transform(v);
+		Paint fillPaint = rc.getVertexFillPaintFunction().apply(v);
 		if (fillPaint != null) {
 			g.setPaint(fillPaint);
 			// set alpha composite
@@ -102,11 +104,11 @@ public class ONDEXBasicVertexRenderer extends BasicVertexRenderer<ONDEXConcept, 
 			}
 			g.setPaint(oldPaint);
 		}
-		Paint drawPaint = rc.getVertexDrawPaintTransformer().transform(v);
+		Paint drawPaint = rc.getVertexDrawPaintFunction().apply(v);
 		if (drawPaint != null) {
 			g.setPaint(drawPaint);
 			Stroke oldStroke = g.getStroke();
-			Stroke stroke = rc.getVertexStrokeTransformer().transform(v);
+			Stroke stroke = rc.getVertexStrokeFunction().apply(v);
 			if (stroke != null) {
 				g.setStroke(stroke);
 			}

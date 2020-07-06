@@ -3,6 +3,7 @@ package net.sourceforge.ondex.ovtk2.annotator.edgebetweennesscluster;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JButton;
@@ -12,7 +13,6 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 
-import edu.uci.ics.jung.algorithms.scoring.BetweennessCentrality;
 import net.sourceforge.ondex.core.AttributeName;
 import net.sourceforge.ondex.core.ONDEXConcept;
 import net.sourceforge.ondex.core.ONDEXRelation;
@@ -24,6 +24,7 @@ import net.sourceforge.ondex.ovtk2.ui.OVTK2PropertiesAggregator;
 import net.sourceforge.ondex.ovtk2.util.OVTKProgressMonitor;
 import net.sourceforge.ondex.ovtk2.util.SpringUtilities;
 import net.sourceforge.ondex.tools.threading.monitoring.IndeterminateProcessAdapter;
+import org.jgrapht.alg.scoring.BetweennessCentrality;
 
 public class EdgeBetweennessClusterAnnotator extends OVTK2Annotator implements
 		ActionListener {
@@ -132,10 +133,11 @@ public class EdgeBetweennessClusterAnnotator extends OVTK2Annotator implements
 								graph);
 						ONDEXRelation to_remove = null;
 						double score = 0;
+						Map<ONDEXConcept, Double> scores = bc.getScores();
 						for (ONDEXRelation edge : graph.getEdges())
-							if (bc.getEdgeScore(edge) > score) {
+							if (scores.get(edge) > score) {
 								to_remove = edge;
-								score = bc.getEdgeScore(edge);
+								score = scores.get(edge);
 							}
 						edges_removed.add(to_remove);
 						graph.setVisibility(to_remove, false);

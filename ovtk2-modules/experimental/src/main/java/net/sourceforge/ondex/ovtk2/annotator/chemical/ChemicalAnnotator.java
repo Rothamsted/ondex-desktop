@@ -165,8 +165,7 @@
 //				.setVertexIconTransformer(vertexIconTransformer);
 //		viewer.getVisualizationViewer().getRenderContext()
 //				.setVertexShapeTransformer(vertexShapeTransformer);
-//		viewer.getVisualizationViewer().getModel().fireStateChanged();
-//		viewer.getVisualizationViewer().repaint();
+//		viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();//		viewer.getVisualizationViewer().repaint();
 //		if (!Config.isApplet)
 //			OVTK2Desktop.getInstance().getOVTK2Menu().updateMenuBar(viewer);
 //	}

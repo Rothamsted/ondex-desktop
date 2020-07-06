@@ -50,7 +50,7 @@ public class VertexURLResolverMenuItem extends EntityURIMenuItem {
 			return;
 		}
 		AttributeName att = MdHelper.createAttName(graph, "URI", String.class);
-		Set<ONDEXConcept> cs = viewer.getPickedNodes();
+		Set<ONDEXConcept> cs = viewer.getSelectedNodes();
 		if (n != null) {
 			cs.add(n);
 		}
@@ -75,11 +75,9 @@ public class VertexURLResolverMenuItem extends EntityURIMenuItem {
 				for (ONDEXConcept c : selectedConcepts) {
 					rs.addAll(graph.getRelationsOfConcept(c));
 				}
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-				doLayout(viewer, concept.getId(), set);
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();doLayout(viewer, concept.getId(), set);
 				viewer.center();
-				viewer.getVisualizationViewer().getModel().fireStateChanged();
-			} catch (Exception e) {
+				viewer.getVisualizationViewer().getVisualizationModel().getModelChangeSupport().fireModelChanged();} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
